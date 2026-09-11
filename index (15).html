@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Word Puzzles — 11+ Practice</title>
+<style>
+  :root {
+    --ink: #2B2419;
+    --paper: #FBF6EC;
+    --navy: #1E2A3A;
+    --amber: #D98E2B;
+    --green: #4C7A52;
+    --red: #B4483A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--navy);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .wrap { width: 100%; max-width: 460px; }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; margin-bottom: 10px; }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .topbar span { font-size: 14px; font-weight: 500; }
+  .progress-label { color: var(--paper); opacity: 0.7; }
+  .score-label { color: var(--amber); }
+  .timer-label { color: var(--paper); font-variant-numeric: tabular-nums; }
+  .timer-label.low { color: var(--red); }
+  .help-btn {
+    width: 26px; height: 26px; border-radius: 999px; border: 1.5px solid rgba(251,246,234,0.4);
+    background: transparent; color: var(--paper); font-size: 13px; font-weight: 700;
+    font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .progress-track { height: 6px; border-radius: 999px; background: rgba(251,246,234,0.15); overflow: hidden; margin-bottom: 22px; }
+  .progress-fill { height: 100%; background: var(--amber); border-radius: 999px; transition: width 0.25s ease; }
+
+  .card { background: var(--paper); color: var(--ink); border-radius: 20px; padding: 26px; }
+  .tag-row { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .tag { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; padding: 3px 9px; border-radius: 999px; }
+  .tag.review { color: var(--amber); background: rgba(217,142,43,0.12); }
+  .tag.abstract { color: var(--navy); background: rgba(30,42,58,0.08); }
+
+  .prompt { font-size: 14px; opacity: 0.6; margin: 0 0 16px; }
+  .analogy-prompt {
+    font-size: 19px; font-weight: 600; line-height: 1.45; margin: 0 0 20px;
+    padding: 16px 18px; background: rgba(30,42,58,0.05); border-radius: 14px;
+  }
+  .analogy-blank { color: var(--amber); }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    padding: 12px 16px; border-radius: 12px; border: 2px solid rgba(43,36,25,0.2);
+    background: transparent; color: var(--ink); font-size: 16px; font-weight: 500;
+    font-family: inherit; cursor: pointer;
+  }
+  .opt-btn:disabled { cursor: default; }
+  .opt-letter {
+    width: 28px; height: 28px; border-radius: 999px; background: rgba(43,36,25,0.08);
+    display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0;
+  }
+  .opt-btn.correct { background: rgba(76,122,82,0.12); border-color: var(--green); color: var(--green); }
+  .opt-btn.correct .opt-letter { background: transparent; }
+  .opt-btn.wrong { background: rgba(180,72,58,0.1); border-color: var(--red); color: var(--red); }
+  .opt-btn.wrong .opt-letter { background: transparent; }
+
+  .feedback { margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(43,36,25,0.12); display: none; }
+  .feedback.show { display: block; }
+  .verdict { font-weight: 600; margin: 0 0 4px; }
+  .verdict.correct { color: var(--green); }
+  .verdict.wrong { color: var(--red); }
+  .reason { font-size: 14px; opacity: 0.85; margin: 0 0 10px; }
+  .requeue-note { font-size: 13px; opacity: 0.6; font-style: italic; margin: 0 0 16px; }
+
+  .miss-reason { margin: 0 0 18px; }
+  .miss-reason-label { font-size: 12px; font-weight: 600; opacity: 0.55; margin: 0 0 8px; }
+  .miss-reason-btns { display: flex; gap: 8px; }
+  .miss-btn {
+    flex: 1; padding: 9px 8px; border-radius: 10px; border: 1.5px solid rgba(43,36,25,0.2);
+    background: transparent; color: var(--ink); font-size: 12.5px; font-weight: 600;
+    font-family: inherit; cursor: pointer; line-height: 1.3;
+  }
+  .miss-btn.selected { background: var(--navy); color: var(--paper); border-color: var(--navy); }
+
+  .defs-label { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; opacity: 0.5; margin: 0 0 8px; }
+  .def-row { font-size: 14px; margin: 0 0 6px; }
+  .def-word { font-weight: 600; }
+  .def-text { opacity: 0.75; }
+  .next-btn {
+    width: 100%; padding: 13px; margin-top: 6px; border-radius: 12px; border: none;
+    background: var(--navy); color: var(--paper); font-size: 16px; font-weight: 600;
+    font-family: inherit; cursor: pointer;
+  }
+
+  .result-card { text-align: center; }
+  .result-eyebrow { font-size: 14px; letter-spacing: 0.02em; color: var(--amber); margin: 0; }
+  .result-score { font-size: 32px; font-weight: 700; margin: 8px 0 6px; }
+  .result-breakdown { font-size: 13px; opacity: 0.6; margin: 0 0 4px; }
+  .result-breakdown2 { font-size: 13px; opacity: 0.6; margin: 0 0 18px; }
+  .result-msg { font-size: 15px; opacity: 0.75; margin: 0 0 24px; }
+  .replay-btn {
+    padding: 13px 28px; border-radius: 12px; border: none; background: var(--navy);
+    color: var(--paper); font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer;
+  }
+
+  .guide-card { padding: 30px 26px; }
+  .mode-switch { display: flex; gap: 8px; margin: 0 0 20px; background: rgba(30,42,58,0.05); padding: 4px; border-radius: 12px; }
+  .mode-btn {
+    flex: 1; padding: 10px 8px; border-radius: 9px; border: none; background: transparent;
+    color: var(--ink); font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; opacity: 0.55;
+  }
+  .mode-btn.active { background: var(--navy); color: var(--paper); opacity: 1; }
+
+  .streak-banner {
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    background: rgba(30,42,58,0.05); border-radius: 12px; padding: 12px; margin: 0 0 22px; font-size: 13px;
+  }
+  .streak-item { text-align: center; }
+  .streak-num { font-size: 18px; font-weight: 700; display: block; }
+  .streak-label { opacity: 0.6; font-size: 11px; }
+
+  .guide-eyebrow { font-size: 13px; letter-spacing: 0.04em; color: var(--amber); margin: 0 0 6px; font-weight: 700; }
+  .guide-title { font-size: 24px; font-weight: 700; margin: 0 0 10px; line-height: 1.25; }
+  .guide-intro { font-size: 14px; opacity: 0.72; margin: 0 0 22px; line-height: 1.5; }
+  .step { display: flex; gap: 14px; margin-bottom: 18px; }
+  .step-num {
+    width: 30px; height: 30px; border-radius: 999px; background: var(--navy); color: var(--paper);
+    font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .step-body { padding-top: 2px; }
+  .step-title { font-weight: 600; font-size: 15px; margin: 0 0 3px; }
+  .step-text { font-size: 14px; opacity: 0.75; margin: 0; line-height: 1.5; }
+  .example-box {
+    margin: 20px 0 24px; padding: 16px 18px; border-radius: 14px;
+    background: rgba(30,42,58,0.05); border: 1px dashed rgba(43,36,25,0.2);
+  }
+  .example-label { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.5; margin: 0 0 10px; }
+  .example-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding: 5px 0; }
+  .example-word { font-weight: 600; }
+  .example-tag { font-size: 12px; opacity: 0.6; }
+  .example-row.odd .example-word { color: var(--red); }
+  .example-row.odd .example-tag { color: var(--red); opacity: 1; font-weight: 600; }
+  .example-analogy { font-size: 15px; line-height: 1.6; }
+  .example-analogy .answer-word { color: var(--green); font-weight: 700; }
+
+  .settings-box { margin: 22px 0 26px; display: flex; flex-direction: column; gap: 12px; }
+  .setting-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px 14px; border-radius: 12px; background: rgba(30,42,58,0.04);
+  }
+  .setting-text { font-size: 14px; }
+  .setting-title { font-weight: 600; margin: 0 0 2px; }
+  .setting-sub { font-size: 12px; opacity: 0.6; }
+  .switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch-track { position: absolute; inset: 0; background: rgba(43,36,25,0.2); border-radius: 999px; cursor: pointer; transition: background 0.15s; }
+  .switch-track::before {
+    content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px;
+    background: var(--paper); border-radius: 999px; transition: transform 0.15s;
+  }
+  .switch input:checked + .switch-track { background: var(--green); }
+  .switch input:checked + .switch-track::before { transform: translateX(18px); }
+
+  .start-btn {
+    width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--navy);
+    color: var(--paper); font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer;
+  }
+  .skip-note { text-align: center; font-size: 12px; opacity: 0.45; margin: 10px 0 0; }
+
+  .review-banner {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: rgba(217,142,43,0.1); border: 1px solid rgba(217,142,43,0.3);
+    border-radius: 12px; padding: 13px 15px; margin: 0 0 20px;
+  }
+  .review-banner-text { font-size: 13.5px; font-weight: 600; }
+  .review-banner-sub { font-size: 12px; opacity: 0.6; font-weight: 400; margin-top: 2px; }
+  .review-now-btn {
+    padding: 9px 14px; border-radius: 10px; border: none; background: var(--amber);
+    color: var(--paper); font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; flex-shrink: 0;
+  }
+  .vocab-words { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; }
+  .vocab-word-chip {
+    font-size: 12.5px; font-weight: 600; padding: 5px 10px; border-radius: 999px;
+    background: rgba(180,72,58,0.08); color: var(--red);
+  }
+
+  .review-flash { text-align: center; padding: 10px 4px; }
+  .review-word { font-size: 30px; font-weight: 700; margin: 20px 0 24px; }
+  .flip-btn {
+    padding: 12px 26px; border-radius: 12px; border: 1.5px solid var(--navy); background: transparent;
+    color: var(--navy); font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer;
+  }
+  .review-meaning { text-align: left; margin: 22px 0; padding: 16px 18px; background: rgba(30,42,58,0.05); border-radius: 14px; }
+  .review-def { font-size: 15px; margin: 0 0 10px; }
+  .review-context { font-size: 13px; opacity: 0.65; margin: 0; font-style: italic; }
+  .review-btns { display: flex; gap: 10px; margin-top: 22px; }
+  .review-btn { flex: 1; padding: 13px; border-radius: 12px; border: none; font-size: 14.5px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .review-btn.tricky { background: rgba(180,72,58,0.1); color: var(--red); }
+  .review-btn.know { background: var(--green); color: var(--paper); }
+  .review-summary-stat { font-size: 13px; opacity: 0.65; margin: 0 0 18px; }
+
+  .session-row { margin: 0 0 20px; }
+  .session-label { font-size: 12px; font-weight: 600; opacity: 0.55; margin: 0 0 8px; }
+  .session-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .session-chip {
+    padding: 9px 14px; border-radius: 10px; border: 1.5px solid rgba(43,36,25,0.2);
+    background: transparent; color: var(--ink); font-size: 13px; font-weight: 600;
+    font-family: inherit; cursor: pointer;
+  }
+  .session-chip.active { background: var(--navy); color: var(--paper); border-color: var(--navy); }
+  .session-count { opacity: 0.6; font-weight: 400; }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+
+<script>
+const QUESTIONS = [
+  { options: ["Cedar", "Birch", "Maple", "Salmon"], answer: 3, difficulty: "concrete", session: "session1",
+    reason: "Cedar, Birch and Maple are all trees. Salmon is a fish, not a tree.",
+    defs: { Cedar: "An evergreen tree with fragrant wood.", Birch: "A tree with thin, papery white bark.", Maple: "A tree known for its bright leaves and sweet sap.", Salmon: "A fish that swims from the sea back to rivers to lay its eggs." } },
+  { options: ["Mercury", "Saturn", "Neptune", "Europa"], answer: 3, difficulty: "concrete", session: "session1",
+    reason: "Mercury, Saturn and Neptune are planets. Europa is a moon of Jupiter, not a planet.",
+    defs: { Mercury: "The planet closest to the Sun.", Saturn: "The planet famous for its rings.", Neptune: "The farthest planet from the Sun.", Europa: "One of Jupiter's icy moons." } },
+  { options: ["Prefix", "Suffix", "Root", "Clause"], answer: 3, difficulty: "abstract", session: "session1",
+    reason: "Prefix, Suffix and Root are all parts of a single word. A Clause is a group of words with a subject and a verb.",
+    defs: { Prefix: "Letters added to the start of a word.", Suffix: "Letters added to the end of a word.", Root: "The main part of a word that carries its core meaning.", Clause: "A group of words containing a subject and a verb." } },
+  { options: ["Famine", "Drought", "Desert", "Deluge"], answer: 3, difficulty: "abstract", session: "session1",
+    reason: "Famine, Drought and Desert are all connected to a lack of water or food. A Deluge is the opposite — a huge flood.",
+    defs: { Famine: "An extreme shortage of food.", Drought: "A long period with little or no rain.", Desert: "A very dry area of land.", Deluge: "A great flood of water." } },
+  { options: ["Viable", "Feasible", "Possible", "Invisible"], answer: 3, difficulty: "abstract", session: "session1",
+    reason: "Viable, Feasible and Possible all mean something can be done. Invisible means something cannot be seen — a different meaning entirely.",
+    defs: { Viable: "Able to work successfully.", Feasible: "Able to be done easily.", Possible: "Able to happen or be true.", Invisible: "Unable to be seen." } },
+  { options: ["Nickel", "Tin", "Zinc", "Quartz"], answer: 3, difficulty: "concrete", session: "session1",
+    reason: "Nickel, Tin and Zinc are all metals. Quartz is a mineral, not a metal.",
+    defs: { Nickel: "A hard, silvery-white metal.", Tin: "A soft silvery metal often used in cans.", Zinc: "A bluish-white metal used to coat other metals.", Quartz: "A hard mineral found in rocks and crystals." } },
+  { options: ["Peninsula", "Isthmus", "Strait", "Volcano"], answer: 3, difficulty: "concrete", session: "session1",
+    reason: "Peninsula, Isthmus and Strait all describe the shape where land meets water. A Volcano is a mountain, a completely different kind of landform.",
+    defs: { Peninsula: "Land surrounded by water on three sides.", Isthmus: "A narrow strip of land joining two larger areas.", Strait: "A narrow stretch of water joining two seas.", Volcano: "A mountain that can erupt with lava." } },
+  { options: ["Radius", "Diameter", "Circumference", "Perimeter"], answer: 3, difficulty: "abstract", session: "session1",
+    reason: "Radius, Diameter and Circumference all specifically measure circles. Perimeter measures the border of any shape.",
+    defs: { Radius: "The distance from a circle's center to its edge.", Diameter: "The distance across a circle through its center.", Circumference: "The distance around a circle.", Perimeter: "The distance around any shape." } },
+  { options: ["Otter", "Seal", "Walrus", "Crocodile"], answer: 3, difficulty: "concrete", session: "session1",
+    reason: "Otter, Seal and Walrus are all mammals. A Crocodile is a reptile.",
+    defs: { Otter: "A playful mammal that swims in rivers.", Seal: "A sea mammal with flippers.", Walrus: "A large sea mammal with tusks.", Crocodile: "A reptile with a long snout and sharp teeth." } },
+  { options: ["Renaissance", "Enlightenment", "Romanticism", "Photosynthesis"], answer: 3, difficulty: "abstract", session: "session1",
+    reason: "Renaissance, Enlightenment and Romanticism are all historical or cultural periods. Photosynthesis is a science process, not a time period.",
+    defs: { Renaissance: "A period of renewed art and learning in Europe.", Enlightenment: "A period focused on reason and science.", Romanticism: "A period that valued emotion and nature in art.", Photosynthesis: "The process plants use to turn sunlight into food." } },
+  { options: ["Manuscript", "Preface", "Index", "Compass"], answer: 3, difficulty: "concrete", session: "session1",
+    reason: "Manuscript, Preface and Index all relate to books. A Compass is a tool for finding direction.",
+    defs: { Manuscript: "A handwritten or original version of a text.", Preface: "An introduction at the start of a book.", Index: "A list at the back of a book showing where topics are.", Compass: "A tool that shows direction." } },
+  { options: ["Tremendous", "Enormous", "Colossal", "Insignificant"], answer: 3, difficulty: "abstract", session: "session1",
+    reason: "Tremendous, Enormous and Colossal all mean huge. Insignificant means tiny or unimportant — the opposite.",
+    defs: { Tremendous: "Very great in size or amount.", Enormous: "Extremely large.", Colossal: "Extremely large or great.", Insignificant: "Too small to matter." } },
+  { options: ["Democracy", "Oligarchy", "Theocracy", "Cartography"], answer: 3, difficulty: "abstract", session: "session1",
+    reason: "Democracy, Oligarchy and Theocracy are all types of government. Cartography is the art of mapmaking.",
+    defs: { Democracy: "Government elected by the people.", Oligarchy: "Government by a small group of people.", Theocracy: "Government run by religious leaders.", Cartography: "The art of making maps." } },
+  { options: ["Sodium", "Potassium", "Calcium", "Carbon"], answer: 3, difficulty: "concrete", session: "session1",
+    reason: "Sodium, Potassium and Calcium are all metals. Carbon is a nonmetal.",
+    defs: { Sodium: "A soft, reactive metal.", Potassium: "A soft metal the body needs.", Calcium: "A metal found in bones and teeth.", Carbon: "A nonmetal found in all living things." } },
+  { options: ["Violin", "Clarinet", "Trumpet", "Cello"], answer: 2, difficulty: "concrete", session: "session1",
+    reason: "Violin, Clarinet and Cello are not brass instruments. The Trumpet is a brass instrument, played by buzzing the lips.",
+    defs: { Violin: "A small string instrument played with a bow.", Clarinet: "A woodwind instrument played with a reed.", Trumpet: "A brass instrument played by buzzing the lips.", Cello: "A large string instrument played with a bow." } },
+  { options: ["Fragile", "Brittle", "Delicate", "Durable"], answer: 3, difficulty: "abstract", session: "session1",
+    reason: "Fragile, Brittle and Delicate all mean something breaks easily. Durable means the opposite — long-lasting and tough.",
+    defs: { Fragile: "Easily broken or damaged.", Brittle: "Hard but likely to snap.", Delicate: "Easily damaged, needs careful handling.", Durable: "Able to withstand wear; strong." } },
+  { options: ["Kilobyte", "Megabyte", "Gigabyte", "Kilometre"], answer: 3, difficulty: "abstract", session: "session1",
+    reason: "Kilobyte, Megabyte and Gigabyte all measure digital information. A Kilometre measures distance.",
+    defs: { Kilobyte: "A small unit of digital information.", Megabyte: "A unit of digital information, about 1000 kilobytes.", Gigabyte: "A large unit of digital information.", Kilometre: "A unit of distance." } },
+  { options: ["Sparrow", "Falcon", "Ostrich", "Penguin"], answer: 3, difficulty: "concrete", session: "session1",
+    reason: "Sparrow, Falcon and Ostrich all live and move about on land or in the air. Penguin is an aquatic bird built for swimming.",
+    defs: { Sparrow: "A small, common bird.", Falcon: "A fast bird of prey.", Ostrich: "The largest bird; it cannot fly but runs very fast.", Penguin: "A flightless bird that swims in the sea." } },
+  { options: ["Prefix", "Synonym", "Antonym", "Homonym"], answer: 0, difficulty: "abstract", session: "session1",
+    reason: "Synonym, Antonym and Homonym all describe a relationship between two words. Prefix is just a word part, not a relationship.",
+    defs: { Prefix: "Letters added to the start of a word.", Synonym: "A word that means the same as another.", Antonym: "A word that means the opposite of another.", Homonym: "A word that sounds like another but means something different." } },
+  { options: ["Granite", "Basalt", "Obsidian", "Limestone"], answer: 3, difficulty: "concrete", session: "session1",
+    reason: "Granite, Basalt and Obsidian are all igneous rocks, formed from cooled lava or magma. Limestone is a sedimentary rock.",
+    defs: { Granite: "A hard igneous rock formed underground.", Basalt: "A dark igneous rock formed from lava.", Obsidian: "Black volcanic glass.", Limestone: "A sedimentary rock formed from shells and minerals." } },
+  { options: ["Catalyst", "Solvent", "Reagent", "Telescope"], answer: 3, difficulty: "abstract", session: "session1",
+    reason: "Catalyst, Solvent and Reagent are all chemistry terms. A Telescope is used in astronomy.",
+    defs: { Catalyst: "A substance that speeds up a chemical reaction.", Solvent: "A liquid that dissolves other substances.", Reagent: "A substance used to cause a chemical reaction.", Telescope: "A tool for viewing distant objects in space." } },
+  { options: ["Mercury", "Copper", "Aluminium", "Diamond"], answer: 3, difficulty: "concrete", session: "session1",
+    reason: "Mercury, Copper and Aluminium are all metals. Diamond is a non-metal — a crystal form of carbon.",
+    defs: { Mercury: "A liquid metal at room temperature.", Copper: "A reddish metal that conducts electricity well.", Aluminium: "A lightweight silvery metal.", Diamond: "A hard crystal form of carbon." } },
+  { options: ["Sonata", "Concerto", "Overture", "Portrait"], answer: 3, difficulty: "abstract", session: "session1",
+    reason: "Sonata, Concerto and Overture are all pieces of music. A Portrait is a painting.",
+    defs: { Sonata: "A piece of music for one or two instruments.", Concerto: "A piece for a solo instrument and orchestra.", Overture: "An introductory piece of orchestral music.", Portrait: "A painting or picture of a person." } },
+  { options: ["Conifer", "Fern", "Moss", "Mammal"], answer: 3, difficulty: "concrete", session: "session1",
+    reason: "Conifer, Fern and Moss are all plants. A Mammal is an animal.",
+    defs: { Conifer: "A tree that produces cones, usually evergreen.", Fern: "A green plant with feathery leaves and no flowers.", Moss: "A small green plant that grows in damp places.", Mammal: "A warm-blooded animal, often with fur." } },
+  { options: ["Hypothesis", "Variable", "Experiment", "Painting"], answer: 3, difficulty: "abstract", session: "session1",
+    reason: "Hypothesis, Variable and Experiment are all part of the scientific method. Painting is a form of art, not science.",
+    defs: { Hypothesis: "An educated guess to be tested.", Variable: "Something that can change in an experiment.", Experiment: "A test to check whether a hypothesis is true.", Painting: "A piece of art made with paint." } },
+  { options: ["Lion", "Tiger", "Leopard", "Salmon"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Lion, Tiger and Leopard are all big cats. Salmon is a fish.",
+    defs: { Lion: "A large wild cat known as the king of the jungle.", Tiger: "A large striped wild cat.", Leopard: "A large spotted wild cat.", Salmon: "A fish that swims upstream to lay its eggs." } },
+  { options: ["Rose", "Tulip", "Daisy", "Cactus"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Rose, Tulip and Daisy are flowers grown for their blooms. A Cactus is a spiny desert succulent.",
+    defs: { Rose: "A fragrant flower with thorny stems.", Tulip: "A cup-shaped spring flower.", Daisy: "A flower with white petals and a yellow center.", Cactus: "A spiny desert plant that stores water." } },
+  { options: ["Eagle", "Hawk", "Owl", "Trout"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Eagle, Hawk and Owl are all birds of prey. Trout is a fish.",
+    defs: { Eagle: "A large bird of prey with sharp eyesight.", Hawk: "A medium-sized bird of prey.", Owl: "A nocturnal bird of prey.", Trout: "A freshwater fish." } },
+  { options: ["Ant", "Bee", "Wasp", "Spider"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Ant, Bee and Wasp are insects with six legs. A Spider is an arachnid with eight legs.",
+    defs: { Ant: "A small insect that lives in colonies.", Bee: "A flying insect that makes honey.", Wasp: "A flying insect with a stinger.", Spider: "An eight-legged arachnid that spins webs." } },
+  { options: ["Frog", "Toad", "Newt", "Snake"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Frog, Toad and Newt are all amphibians. A Snake is a reptile.",
+    defs: { Frog: "An amphibian known for jumping and croaking.", Toad: "A dry-skinned amphibian.", Newt: "A small amphibian with a tail.", Snake: "A legless reptile." } },
+  { options: ["Mars", "Venus", "Earth", "Pluto"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Mars, Venus and Earth are planets. Pluto is classified as a dwarf planet.",
+    defs: { Mars: "The red planet.", Venus: "The hottest planet, second from the Sun.", Earth: "Our home planet.", Pluto: "A dwarf planet in the outer solar system." } },
+  { options: ["Comet", "Asteroid", "Meteor", "Galaxy"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Comet, Asteroid and Meteor are all small objects in space. A Galaxy is a vast system of stars.",
+    defs: { Comet: "An icy body that develops a tail near the Sun.", Asteroid: "A rocky object orbiting the Sun.", Meteor: "A streak of light from space debris burning up.", Galaxy: "A huge system of stars, gas, and dust." } },
+  { options: ["Gold", "Silver", "Platinum", "Sulfur"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Gold, Silver and Platinum are all precious metals. Sulfur is a nonmetal element.",
+    defs: { Gold: "A valuable yellow metal.", Silver: "A shiny white precious metal.", Platinum: "A rare, dense precious metal.", Sulfur: "A yellow nonmetal element." } },
+  { options: ["Oxygen", "Nitrogen", "Hydrogen", "Iron"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Oxygen, Nitrogen and Hydrogen are all gases. Iron is a solid metal.",
+    defs: { Oxygen: "A gas needed for breathing.", Nitrogen: "The most common gas in air.", Hydrogen: "The lightest element, a gas.", Iron: "A strong metal used to make steel." } },
+  { options: ["Piano", "Guitar", "Harp", "Flute"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Piano, Guitar and Harp are all string instruments. A Flute is a woodwind instrument.",
+    defs: { Piano: "A keyboard instrument with strings struck by hammers.", Guitar: "A string instrument played by plucking.", Harp: "A large string instrument plucked by hand.", Flute: "A woodwind instrument played by blowing air." } },
+  { options: ["Ballet", "Opera", "Symphony", "Sculpture"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Ballet, Opera and Symphony are all performed with music. A Sculpture is a visual art, not a performance.",
+    defs: { Ballet: "A form of dance performed to music.", Opera: "A drama set to music and singing.", Symphony: "A long piece of music for orchestra.", Sculpture: "A three-dimensional work of art." } },
+  { options: ["Comedy", "Tragedy", "Farce", "Novel"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Comedy, Tragedy and Farce are all types of theatrical drama. A Novel is a long fictional book, not a play.",
+    defs: { Comedy: "A play meant to amuse, usually ending happily.", Tragedy: "A serious play that ends sadly.", Farce: "A comedy full of ridiculous situations.", Novel: "A long work of fiction in book form." } },
+  { options: ["Noun", "Verb", "Adjective", "Sentence"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Noun, Verb and Adjective are all parts of speech. A Sentence is a full grammatical unit made of words.",
+    defs: { Noun: "A word naming a person, place, or thing.", Verb: "A word describing an action.", Adjective: "A word describing a noun.", Sentence: "A group of words expressing a complete thought." } },
+  { options: ["Comma", "Semicolon", "Colon", "Paragraph"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Comma, Semicolon and Colon are all punctuation marks. A Paragraph is a block of writing.",
+    defs: { Comma: "A punctuation mark showing a pause.", Semicolon: "A punctuation mark joining related ideas.", Colon: "A punctuation mark introducing a list or explanation.", Paragraph: "A distinct section of writing." } },
+  { options: ["Simile", "Metaphor", "Personification", "Chapter"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Simile, Metaphor and Personification are all figures of speech. A Chapter is a division of a book.",
+    defs: { Simile: "A comparison using 'like' or 'as'.", Metaphor: "A comparison saying one thing is another.", Personification: "Giving human traits to non-human things.", Chapter: "A numbered section of a book." } },
+  { options: ["Triangle", "Square", "Pentagon", "Sphere"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Triangle, Square and Pentagon are all flat, two-dimensional shapes. A Sphere is a three-dimensional solid.",
+    defs: { Triangle: "A shape with three sides.", Square: "A shape with four equal sides.", Pentagon: "A shape with five sides.", Sphere: "A round, three-dimensional solid." } },
+  { options: ["Cube", "Cylinder", "Cone", "Rectangle"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Cube, Cylinder and Cone are all three-dimensional solids. A Rectangle is a flat, two-dimensional shape.",
+    defs: { Cube: "A solid with six square faces.", Cylinder: "A solid with two circular ends and a curved side.", Cone: "A solid with a circular base tapering to a point.", Rectangle: "A flat shape with four right angles." } },
+  { options: ["Acute", "Obtuse", "Right", "Parallel"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Acute, Obtuse and Right all describe types of angles. Parallel describes a relationship between lines, not an angle.",
+    defs: { Acute: "An angle less than 90 degrees.", Obtuse: "An angle more than 90 degrees.", Right: "An angle of exactly 90 degrees.", Parallel: "Lines that never meet." } },
+  { options: ["Add", "Subtract", "Multiply", "Equation"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Add, Subtract and Multiply are all math operations. An Equation is a statement, not an operation.",
+    defs: { Add: "To combine numbers to find a total.", Subtract: "To take one number away from another.", Multiply: "To add a number to itself repeatedly.", Equation: "A statement that two things are equal." } },
+  { options: ["Prime", "Composite", "Even", "Fraction"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Prime, Composite and Even all describe types of whole numbers. A Fraction represents a part of a whole.",
+    defs: { Prime: "A number with only two factors, one and itself.", Composite: "A number with more than two factors.", Even: "A number divisible by two.", Fraction: "A part of a whole number." } },
+  { options: ["Liquid", "Solid", "Gas", "Energy"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Liquid, Solid and Gas are all states of matter. Energy is the ability to do work, not a state of matter.",
+    defs: { Liquid: "A state of matter that flows and takes the shape of its container.", Solid: "A state of matter with a fixed shape.", Gas: "A state of matter that spreads to fill its container.", Energy: "The ability to do work." } },
+  { options: ["Evaporation", "Condensation", "Precipitation", "Erosion"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Evaporation, Condensation and Precipitation are all stages of the water cycle. Erosion is a separate process where land is worn away.",
+    defs: { Evaporation: "Water turning into vapor from heat.", Condensation: "Vapor turning back into liquid water.", Precipitation: "Water falling from clouds as rain or snow.", Erosion: "The wearing away of land by wind or water." } },
+  { options: ["Igneous", "Sedimentary", "Metamorphic", "Fossil"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Igneous, Sedimentary and Metamorphic are all types of rock. A Fossil is the preserved remains of an organism, not a rock type.",
+    defs: { Igneous: "Rock formed from cooled magma or lava.", Sedimentary: "Rock formed from layers of compressed material.", Metamorphic: "Rock changed by heat and pressure.", Fossil: "The preserved remains of an ancient organism." } },
+  { options: ["Mitochondria", "Nucleus", "Cytoplasm", "Skeleton"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Mitochondria, Nucleus and Cytoplasm are all parts of a cell. A Skeleton is a structure in the whole body.",
+    defs: { Mitochondria: "The part of a cell that produces energy.", Nucleus: "The control center of a cell.", Cytoplasm: "The jelly-like substance filling a cell.", Skeleton: "The framework of bones in a body." } },
+  { options: ["Herbivore", "Carnivore", "Omnivore", "Predator"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Herbivore, Carnivore and Omnivore all classify what an animal eats. Predator describes an animal's role as a hunter, not its diet type.",
+    defs: { Herbivore: "An animal that eats only plants.", Carnivore: "An animal that eats only meat.", Omnivore: "An animal that eats both plants and meat.", Predator: "An animal that hunts other animals for food." } },
+  { options: ["Egg", "Larva", "Pupa", "Cocoon"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Egg, Larva and Pupa are all stages in an insect's life cycle. A Cocoon is the protective case built during the pupa stage, not a stage itself.",
+    defs: { Egg: "The first stage of an insect's life.", Larva: "The stage after hatching, often as a caterpillar.", Pupa: "The stage where an insect transforms inside a casing.", Cocoon: "The silky case some insects spin around themselves." } },
+  { options: ["Spring", "Summer", "Autumn", "Weather"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Spring, Summer and Autumn are all seasons. Weather refers to daily atmospheric conditions, not a season.",
+    defs: { Spring: "The season when plants begin to grow.", Summer: "The warmest season of the year.", Autumn: "The season when leaves fall.", Weather: "The day-to-day state of the atmosphere." } },
+  { options: ["Rainbow", "Thunderstorm", "Hurricane", "Continent"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Rainbow, Thunderstorm and Hurricane are all weather phenomena. A Continent is a large landmass.",
+    defs: { Rainbow: "An arc of colors formed by sunlight and rain.", Thunderstorm: "A storm with thunder and lightning.", Hurricane: "A powerful rotating storm.", Continent: "One of Earth's large landmasses." } },
+  { options: ["Asia", "Africa", "Europe", "Sahara"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Asia, Africa and Europe are all continents. The Sahara is a desert located within a continent.",
+    defs: { Asia: "The largest continent.", Africa: "The continent home to the Sahara desert.", Europe: "A continent known for its many countries.", Sahara: "A vast desert in northern Africa." } },
+  { options: ["Atlantic", "Pacific", "Indian", "Amazon"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Atlantic, Pacific and Indian are all oceans. The Amazon is a river.",
+    defs: { Atlantic: "The ocean between the Americas and Europe and Africa.", Pacific: "The largest ocean, between Asia and the Americas.", Indian: "The ocean south of Asia.", Amazon: "The largest river by water flow, in South America." } },
+  { options: ["Nile", "Amazon", "Mississippi", "Everest"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Nile, Amazon and Mississippi are all rivers. Everest is a mountain.",
+    defs: { Nile: "The longest river, located in Africa.", Amazon: "The river with the greatest water flow, in South America.", Mississippi: "A major river in North America.", Everest: "The tallest mountain on Earth." } },
+  { options: ["Pound", "Dollar", "Euro", "Meter"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Pound, Dollar and Euro are all currencies. A Meter is a unit of length.",
+    defs: { Pound: "The currency of the United Kingdom.", Dollar: "The currency of the United States.", Euro: "The currency used across much of Europe.", Meter: "A unit used to measure length." } },
+  { options: ["Celsius", "Fahrenheit", "Kelvin", "Liter"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Celsius, Fahrenheit and Kelvin are all temperature scales. A Liter measures volume.",
+    defs: { Celsius: "A temperature scale where water freezes at 0 degrees.", Fahrenheit: "A temperature scale used mainly in the US.", Kelvin: "A temperature scale starting at absolute zero.", Liter: "A unit used to measure volume." } },
+  { options: ["Gram", "Kilogram", "Ounce", "Second"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Gram, Kilogram and Ounce are all units of mass. A Second is a unit of time.",
+    defs: { Gram: "A small unit of mass.", Kilogram: "A unit of mass equal to 1000 grams.", Ounce: "A small unit of mass used in some countries.", Second: "A unit used to measure time." } },
+  { options: ["Hour", "Minute", "Century", "Inch"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Hour, Minute and Century are all units of time. An Inch is a unit of length.",
+    defs: { Hour: "A unit of time equal to 60 minutes.", Minute: "A unit of time equal to 60 seconds.", Century: "A period of 100 years.", Inch: "A unit used to measure length." } },
+  { options: ["Doctor", "Nurse", "Surgeon", "Architect"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Doctor, Nurse and Surgeon are all medical professions. An Architect designs buildings, not a medical role.",
+    defs: { Doctor: "A person trained to treat illness.", Nurse: "A person trained to care for patients.", Surgeon: "A doctor who performs operations.", Architect: "A person who designs buildings." } },
+  { options: ["Hammer", "Screwdriver", "Wrench", "Violin"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Hammer, Screwdriver and Wrench are all hand tools. A Violin is a musical instrument.",
+    defs: { Hammer: "A tool for driving nails.", Screwdriver: "A tool for turning screws.", Wrench: "A tool for gripping and turning bolts.", Violin: "A string instrument played with a bow." } },
+  { options: ["Car", "Bicycle", "Airplane", "Refrigerator"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Car, Bicycle and Airplane are all vehicles used for transport. A Refrigerator is a kitchen appliance.",
+    defs: { Car: "A road vehicle with four wheels.", Bicycle: "A two-wheeled vehicle powered by pedaling.", Airplane: "A vehicle that flies through the air.", Refrigerator: "An appliance that keeps food cold." } },
+  { options: ["Oven", "Toaster", "Blender", "Telescope"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Oven, Toaster and Blender are all kitchen appliances. A Telescope is used to study space.",
+    defs: { Oven: "An appliance for baking and roasting food.", Toaster: "An appliance for toasting bread.", Blender: "An appliance for mixing or pureeing food.", Telescope: "A tool for viewing distant objects in space." } },
+  { options: ["Heart", "Lungs", "Liver", "Elbow"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Heart, Lungs and Liver are all internal organs. The Elbow is a joint, not an organ.",
+    defs: { Heart: "The organ that pumps blood.", Lungs: "The organs used for breathing.", Liver: "The organ that filters the blood.", Elbow: "The joint between the upper and lower arm." } },
+  { options: ["Sight", "Hearing", "Taste", "Skeleton"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Sight, Hearing and Taste are all senses. The Skeleton is a body structure, not a sense.",
+    defs: { Sight: "The sense used to see.", Hearing: "The sense used to hear sound.", Taste: "The sense used to detect flavor.", Skeleton: "The framework of bones supporting the body." } },
+  { options: ["Happy", "Joyful", "Cheerful", "Furious"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Happy, Joyful and Cheerful all describe feeling pleased. Furious describes anger, a very different emotion.",
+    defs: { Happy: "Feeling pleased or content.", Joyful: "Full of happiness.", Cheerful: "Noticeably happy and positive.", Furious: "Extremely angry." } },
+  { options: ["Sad", "Gloomy", "Miserable", "Ecstatic"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Sad, Gloomy and Miserable all describe feeling unhappy. Ecstatic means extremely happy, the opposite.",
+    defs: { Sad: "Feeling unhappy.", Gloomy: "Feeling or looking dark and sad.", Miserable: "Very unhappy.", Ecstatic: "Feeling extremely happy." } },
+  { options: ["Loud", "Noisy", "Deafening", "Silent"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Loud, Noisy and Deafening all describe a lot of sound. Silent means no sound at all.",
+    defs: { Loud: "Producing a lot of noise.", Noisy: "Full of noise.", Deafening: "Extremely loud.", Silent: "Making no sound at all." } },
+  { options: ["Ancient", "Old", "Antique", "Modern"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Ancient, Old and Antique all describe something from long ago. Modern means relating to the present.",
+    defs: { Ancient: "Very old, from long ago.", Old: "Having existed for a long time.", Antique: "Old and often valuable.", Modern: "Relating to the present time." } },
+  { options: ["Begin", "Start", "Commence", "Conclude"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Begin, Start and Commence all mean to start something. Conclude means to end it.",
+    defs: { Begin: "To start doing something.", Start: "To begin an action or event.", Commence: "A formal word for begin.", Conclude: "To bring something to an end." } },
+  { options: ["Bold", "Brave", "Courageous", "Timid"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Bold, Brave and Courageous all describe having no fear. Timid describes being easily frightened, the opposite.",
+    defs: { Bold: "Showing courage and confidence.", Brave: "Ready to face danger without fear.", Courageous: "Having the strength to face difficulty.", Timid: "Easily frightened, lacking confidence." } },
+  { options: ["Generous", "Kind", "Charitable", "Selfish"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Generous, Kind and Charitable all describe giving freely to others. Selfish means caring only about yourself.",
+    defs: { Generous: "Willing to give freely.", Kind: "Friendly and considerate.", Charitable: "Generous towards those in need.", Selfish: "Caring only about oneself." } },
+  { options: ["Rapid", "Swift", "Quick", "Sluggish"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Rapid, Swift and Quick all describe moving fast. Sluggish describes moving slowly.",
+    defs: { Rapid: "Happening very quickly.", Swift: "Moving very fast.", Quick: "Done with speed.", Sluggish: "Slow-moving and lacking energy." } },
+  { options: ["Transparent", "Clear", "See-through", "Opaque"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Transparent, Clear and See-through all describe being able to see through something. Opaque means you cannot see through it.",
+    defs: { Transparent: "Able to be seen through clearly.", Clear: "Free from anything blocking vision.", "See-through": "Able to be seen through.", Opaque: "Not able to be seen through." } },
+  { options: ["Circle", "Oval", "Ellipse", "Cube"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Circle, Oval and Ellipse are all flat, curved 2D shapes. A Cube is a three-dimensional solid.",
+    defs: { Circle: "A perfectly round 2D shape.", Oval: "An egg-shaped 2D figure.", Ellipse: "A stretched circle shape.", Cube: "A solid three-dimensional shape." } },
+  { options: ["Continent", "Country", "City", "Ocean"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Continent, Country and City are all land-based divisions. An Ocean is a body of water.",
+    defs: { Continent: "One of Earth's large landmasses.", Country: "A nation with its own government.", City: "A large town.", Ocean: "A vast body of salt water." } },
+  { options: ["River", "Lake", "Pond", "Mountain"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "River, Lake and Pond are all bodies of water. A Mountain is a landform, not water.",
+    defs: { River: "A flowing body of fresh water.", Lake: "A large body of water surrounded by land.", Pond: "A small body of still water.", Mountain: "A very high landform." } },
+  { options: ["Valley", "Canyon", "Plateau", "Stream"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Valley, Canyon and Plateau are all landforms. A Stream is a body of water.",
+    defs: { Valley: "Low land between hills or mountains.", Canyon: "A deep gorge, often with a river running through it.", Plateau: "A raised area of flat land.", Stream: "A small flowing body of water." } },
+  { options: ["Solar", "Wind", "Hydro", "Textbook"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Solar, Wind and Hydro are all renewable energy sources. A Textbook is a book, not an energy source.",
+    defs: { Solar: "Energy from sunlight.", Wind: "Energy from moving air.", Hydro: "Energy from moving water.", Textbook: "A book used for study." } },
+  { options: ["Friction", "Gravity", "Magnetism", "Calculator"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Friction, Gravity and Magnetism are all physical forces. A Calculator is a tool, not a force.",
+    defs: { Friction: "A force that resists motion between surfaces.", Gravity: "The force that pulls objects toward each other.", Magnetism: "The force between magnets.", Calculator: "A tool for doing math calculations." } },
+  { options: ["Lever", "Pulley", "Wedge", "Battery"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Lever, Pulley and Wedge are all simple machines. A Battery stores power; it isn't a simple machine.",
+    defs: { Lever: "A simple machine that pivots on a fixed point.", Pulley: "A simple machine using a wheel and rope.", Wedge: "A simple machine that splits or lifts things.", Battery: "A device that stores electrical energy." } },
+  { options: ["Byte", "Pixel", "Software", "Mountain"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Byte, Pixel and Software are all computer terms. A Mountain is a landform.",
+    defs: { Byte: "A small unit of digital data.", Pixel: "The smallest unit of a digital image.", Software: "Programs that run on a computer.", Mountain: "A very high landform." } },
+  { options: ["Keyboard", "Mouse", "Monitor", "Umbrella"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Keyboard, Mouse and Monitor are all computer parts. An Umbrella shields you from rain.",
+    defs: { Keyboard: "A device used to type.", Mouse: "A device used to point and click.", Monitor: "A screen that displays a computer's output.", Umbrella: "A device that shields you from rain." } },
+  { options: ["Continent", "Peninsula", "Archipelago", "Highway"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Continent, Peninsula and Archipelago are all landforms. A Highway is a road.",
+    defs: { Continent: "One of Earth's large landmasses.", Peninsula: "Land surrounded by water on three sides.", Archipelago: "A group of islands.", Highway: "A major road for traveling." } },
+  { options: ["Autobiography", "Biography", "Memoir", "Recipe"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Autobiography, Biography and Memoir are all forms of life-story writing. A Recipe gives cooking instructions.",
+    defs: { Autobiography: "A person's account of their own life.", Biography: "An account of someone else's life.", Memoir: "A personal account of specific memories.", Recipe: "Instructions for preparing food." } },
+  { options: ["Poem", "Sonnet", "Haiku", "Essay"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Poem, Sonnet and Haiku are all forms of poetry. An Essay is written in prose, not poetry.",
+    defs: { Poem: "A piece of writing with rhythm and often rhyme.", Sonnet: "A 14-line poem with a set structure.", Haiku: "A short Japanese poem with three lines.", Essay: "A short piece of writing on a topic, usually in prose." } },
+  { options: ["Protagonist", "Antagonist", "Narrator", "Plot"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Protagonist, Antagonist and Narrator are all roles played by characters or voices in a story. The Plot is the sequence of events.",
+    defs: { Protagonist: "The main character in a story.", Antagonist: "The character who opposes the main character.", Narrator: "The voice that tells the story.", Plot: "The sequence of events in a story." } },
+  { options: ["Setting", "Theme", "Climax", "Author"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Setting, Theme and Climax are all elements within a story. The Author is the person who wrote it.",
+    defs: { Setting: "The time and place of a story.", Theme: "The central message of a story.", Climax: "The most intense point of a story.", Author: "The person who writes a piece of work." } },
+  { options: ["Mammal", "Reptile", "Amphibian", "Vegetable"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Mammal, Reptile and Amphibian are all classes of animal. A Vegetable is a plant grown for food.",
+    defs: { Mammal: "A warm-blooded animal that often has fur.", Reptile: "A cold-blooded animal with scales.", Amphibian: "An animal that lives both in water and on land.", Vegetable: "A plant grown for food." } },
+  { options: ["Whale", "Dolphin", "Porpoise", "Shark"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Whale, Dolphin and Porpoise are all marine mammals. A Shark is a fish.",
+    defs: { Whale: "A huge marine mammal.", Dolphin: "An intelligent marine mammal.", Porpoise: "A small marine mammal related to dolphins.", Shark: "A cartilaginous fish." } },
+  { options: ["Butterfly", "Moth", "Dragonfly", "Bat"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Butterfly, Moth and Dragonfly are all insects. A Bat is a flying mammal.",
+    defs: { Butterfly: "A colorful flying insect.", Moth: "A night-flying insect related to butterflies.", Dragonfly: "A fast-flying insect with long wings.", Bat: "A flying mammal." } },
+  { options: ["Spider", "Scorpion", "Tick", "Beetle"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Spider, Scorpion and Tick are all arachnids with eight legs. A Beetle is an insect with six legs.",
+    defs: { Spider: "An eight-legged arachnid that spins webs.", Scorpion: "An arachnid with a stinging tail.", Tick: "A tiny blood-feeding arachnid.", Beetle: "An insect with hard wing covers." } },
+  { options: ["Nebula", "Galaxy", "Constellation", "River"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Nebula, Galaxy and Constellation are all things found in space. A River is a body of water on Earth.",
+    defs: { Nebula: "A giant cloud of gas and dust in space.", Galaxy: "A huge system of stars, gas and dust.", Constellation: "A pattern of stars in the sky.", River: "A flowing body of fresh water." } },
+  { options: ["Equator", "Meridian", "Latitude", "Glacier"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Equator, Meridian and Latitude are all imaginary lines used on maps. A Glacier is a real feature made of ice.",
+    defs: { Equator: "The imaginary line around Earth's middle.", Meridian: "A line of longitude running pole to pole.", Latitude: "A line measuring distance north or south of the equator.", Glacier: "A huge, slow-moving mass of ice." } },
+  { options: ["North", "South", "East", "Compass"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "North, South and East are all directions. A Compass is the tool that shows direction.",
+    defs: { North: "The direction toward the North Pole.", South: "The direction toward the South Pole.", East: "The direction where the Sun rises.", Compass: "A tool that shows direction." } },
+  { options: ["Monarchy", "Republic", "Dictatorship", "Constitution"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Monarchy, Republic and Dictatorship are all systems of government. A Constitution is the document that sets out a country's laws.",
+    defs: { Monarchy: "Government led by a king or queen.", Republic: "Government where power is held by elected representatives.", Dictatorship: "Government controlled by one powerful leader.", Constitution: "A document setting out a country's laws and principles." } },
+  { options: ["Tax", "Budget", "Currency", "Parliament"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Tax, Budget and Currency are all economic terms. Parliament is a governing body, not an economic term.",
+    defs: { Tax: "Money paid to the government.", Budget: "A plan for spending money.", Currency: "The money used in a country.", Parliament: "A group that makes a country's laws." } },
+  { options: ["Import", "Export", "Trade", "Glacier"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Import, Export and Trade are all economic terms about the movement of goods. A Glacier is a feature made of ice.",
+    defs: { Import: "Goods brought into a country.", Export: "Goods sent out of a country.", Trade: "The buying and selling of goods.", Glacier: "A huge, slow-moving mass of ice." } },
+  { options: ["Inflation", "Recession", "Deflation", "Volcano"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Inflation, Recession and Deflation are all economic terms. A Volcano is a mountain that can erupt.",
+    defs: { Inflation: "A rise in prices over time.", Recession: "A period when the economy shrinks.", Deflation: "A fall in prices over time.", Volcano: "A mountain that can erupt with lava." } },
+  { options: ["Chess", "Checkers", "Monopoly", "Soccer"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Chess, Checkers and Monopoly are all board or table games. Soccer is a sport played outdoors.",
+    defs: { Chess: "A strategy board game with kings and queens.", Checkers: "A board game played by jumping over opponents' pieces.", Monopoly: "A board game about buying and trading properties.", Soccer: "A sport played by kicking a ball into a goal." } },
+  { options: ["Basketball", "Volleyball", "Tennis", "Chess"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Basketball, Volleyball and Tennis are all physical sports. Chess is a strategy board game.",
+    defs: { Basketball: "A sport where players shoot a ball through a hoop.", Volleyball: "A sport where players hit a ball over a net.", Tennis: "A sport played with rackets and a ball.", Chess: "A strategy board game with kings and queens." } },
+  { options: ["Baseball", "Cricket", "Golf", "Painting"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Baseball, Cricket and Golf are all sports. Painting is a form of art.",
+    defs: { Baseball: "A bat-and-ball sport played in innings.", Cricket: "A bat-and-ball sport played with wickets.", Golf: "A sport where players hit a ball into holes.", Painting: "Creating pictures using paint." } },
+  { options: ["Red", "Blue", "Yellow", "Square"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Red, Blue and Yellow are all primary colors. A Square is a shape, not a color.",
+    defs: { Red: "A primary color.", Blue: "A primary color.", Yellow: "A primary color.", Square: "A shape with four equal sides." } },
+  { options: ["Green", "Orange", "Purple", "Circle"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Green, Orange and Purple are all secondary colors. A Circle is a shape, not a color.",
+    defs: { Green: "A color made by mixing blue and yellow.", Orange: "A color made by mixing red and yellow.", Purple: "A color made by mixing red and blue.", Circle: "A round, flat shape." } },
+  { options: ["Monday", "Tuesday", "Friday", "January"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Monday, Tuesday and Friday are all days of the week. January is a month.",
+    defs: { Monday: "The second day of the week.", Tuesday: "The third day of the week.", Friday: "The sixth day of the week.", January: "The first month of the year." } },
+  { options: ["January", "March", "July", "Monday"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "January, March and July are all months of the year. Monday is a day of the week.",
+    defs: { January: "The first month of the year.", March: "The third month of the year.", July: "The seventh month of the year.", Monday: "A day of the week." } },
+  { options: ["Spring", "Winter", "Summer", "Wednesday"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Spring, Winter and Summer are all seasons. Wednesday is a day of the week.",
+    defs: { Spring: "The season when plants begin to grow.", Winter: "The coldest season of the year.", Summer: "The warmest season of the year.", Wednesday: "A day of the week." } },
+  { options: ["Apple", "Banana", "Orange", "Carrot"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Apple, Banana and Orange are all fruits. A Carrot is a vegetable.",
+    defs: { Apple: "A round fruit that grows on trees.", Banana: "A long yellow fruit.", Orange: "A round citrus fruit.", Carrot: "An orange root vegetable." } },
+  { options: ["Potato", "Carrot", "Onion", "Peach"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Potato, Carrot and Onion are all vegetables. A Peach is a fruit.",
+    defs: { Potato: "A starchy root vegetable.", Carrot: "An orange root vegetable.", Onion: "A bulb vegetable with layers.", Peach: "A soft, fuzzy fruit." } },
+  { options: ["Wheat", "Rice", "Corn", "Oak"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Wheat, Rice and Corn are all grain crops. An Oak is a tree, not a grain.",
+    defs: { Wheat: "A grain used to make flour.", Rice: "A grain that is a staple food in many countries.", Corn: "A grain also called maize.", Oak: "A large hardwood tree." } },
+  { options: ["Milk", "Cheese", "Butter", "Bread"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Milk, Cheese and Butter are all dairy products. Bread is a baked food.",
+    defs: { Milk: "A liquid produced by mammals, often cows.", Cheese: "A dairy food made from milk.", Butter: "A dairy food made by churning cream.", Bread: "A baked food made from flour." } },
+  { options: ["Wolf", "Fox", "Coyote", "Rabbit"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Wolf, Fox and Coyote are all canines. A Rabbit is not related to dogs.",
+    defs: { Wolf: "A wild canine that hunts in packs.", Fox: "A small, clever canine.", Coyote: "A wild canine found in North America.", Rabbit: "A small mammal known for hopping." } },
+  { options: ["Cat", "Lion", "Tiger", "Hyena"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Cat, Lion and Tiger are all true cats (felines). A Hyena is not a true cat, despite looking similar.",
+    defs: { Cat: "A small domesticated feline.", Lion: "A large wild cat.", Tiger: "A large striped wild cat.", Hyena: "A carnivorous mammal that is not a true cat." } },
+  { options: ["Horse", "Donkey", "Zebra", "Cow"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Horse, Donkey and Zebra are all equines, close relatives of each other. A Cow is not related to horses.",
+    defs: { Horse: "A large hooved mammal used for riding.", Donkey: "A hooved mammal related to the horse.", Zebra: "A striped African relative of the horse.", Cow: "A large farm animal raised for milk and meat." } },
+  { options: ["Sheep", "Goat", "Cow", "Chicken"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Sheep, Goat and Cow are all mammals. A Chicken is a bird.",
+    defs: { Sheep: "A woolly farm animal.", Goat: "A farm animal known for climbing.", Cow: "A large farm animal raised for milk.", Chicken: "A bird raised for eggs and meat." } },
+  { options: ["Chicken", "Duck", "Goose", "Rabbit"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Chicken, Duck and Goose are all birds. A Rabbit is a mammal.",
+    defs: { Chicken: "A bird raised for eggs and meat.", Duck: "A water bird with webbed feet.", Goose: "A large water bird.", Rabbit: "A small hopping mammal." } },
+  { options: ["Elephant", "Rhino", "Hippo", "Kangaroo"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Elephant, Rhino and Hippo are all large African animals. A Kangaroo is native to Australia.",
+    defs: { Elephant: "The largest land animal, known for its trunk.", Rhino: "A large animal with a horn on its nose.", Hippo: "A large semi-aquatic mammal.", Kangaroo: "An Australian marsupial that hops." } },
+  { options: ["Kangaroo", "Koala", "Wombat", "Panda"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Kangaroo, Koala and Wombat are all Australian marsupials. A Panda is a bear native to China.",
+    defs: { Kangaroo: "An Australian marsupial that hops.", Koala: "An Australian marsupial that eats eucalyptus.", Wombat: "A burrowing Australian marsupial.", Panda: "A black-and-white bear native to China." } },
+  { options: ["Panda", "Polar Bear", "Grizzly Bear", "Lion"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Panda, Polar Bear and Grizzly Bear are all types of bear. A Lion is a big cat.",
+    defs: { Panda: "A black-and-white bear native to China.", "Polar Bear": "A large white bear living in the Arctic.", "Grizzly Bear": "A large brown bear found in North America.", Lion: "A large wild cat." } },
+  { options: ["Diamond", "Ruby", "Emerald", "Granite"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Diamond, Ruby and Emerald are all precious gemstones. Granite is an ordinary rock.",
+    defs: { Diamond: "A hard, clear precious gemstone.", Ruby: "A red precious gemstone.", Emerald: "A green precious gemstone.", Granite: "A hard igneous rock." } },
+  { options: ["Ruby", "Sapphire", "Emerald", "Pearl"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Ruby, Sapphire and Emerald are all mineral gemstones. A Pearl is formed inside an oyster, not a mineral.",
+    defs: { Ruby: "A red precious gemstone.", Sapphire: "A blue precious gemstone.", Emerald: "A green precious gemstone.", Pearl: "A gem formed inside an oyster, not a mineral." } },
+  { options: ["Author", "Poet", "Novelist", "Illustrator"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Author, Poet and Novelist all write words. An Illustrator creates pictures, not text.",
+    defs: { Author: "A person who writes books.", Poet: "A person who writes poems.", Novelist: "A person who writes novels.", Illustrator: "A person who creates pictures for books." } },
+  { options: ["Painter", "Sculptor", "Photographer", "Composer"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Painter, Sculptor and Photographer all create visual art. A Composer creates music.",
+    defs: { Painter: "An artist who creates pictures with paint.", Sculptor: "An artist who creates three-dimensional works.", Photographer: "An artist who takes pictures with a camera.", Composer: "A person who writes music." } },
+  { options: ["Composer", "Musician", "Conductor", "Playwright"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Composer, Musician and Conductor are all roles connected to music. A Playwright writes plays.",
+    defs: { Composer: "A person who writes music.", Musician: "A person who plays music.", Conductor: "A person who leads an orchestra.", Playwright: "A person who writes plays." } },
+  { options: ["Actor", "Director", "Playwright", "Sculptor"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Actor, Director and Playwright are all roles in theatre. A Sculptor creates three-dimensional art.",
+    defs: { Actor: "A person who performs in plays or films.", Director: "A person who guides a play or film's production.", Playwright: "A person who writes plays.", Sculptor: "An artist who creates three-dimensional works." } },
+  { options: ["Emperor", "King", "President", "Continent"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Emperor, King and President are all types of leaders. A Continent is a landmass.",
+    defs: { Emperor: "The ruler of an empire.", King: "The male ruler of a monarchy.", President: "The elected leader of a republic.", Continent: "One of Earth's large landmasses." } },
+  { options: ["Prince", "Princess", "Duke", "Mayor"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Prince, Princess and Duke are all noble titles. A Mayor is an elected official, not a noble.",
+    defs: { Prince: "A male member of a royal family.", Princess: "A female member of a royal family.", Duke: "A high-ranking noble.", Mayor: "The elected leader of a city." } },
+  { options: ["Knight", "Baron", "Earl", "Soldier"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Knight, Baron and Earl are all noble titles. A Soldier is a general military role, not a title of nobility.",
+    defs: { Knight: "A noble warrior in medieval times.", Baron: "A title of nobility.", Earl: "A British noble title.", Soldier: "A member of an army." } },
+  { options: ["Sword", "Shield", "Armor", "Castle"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Sword, Shield and Armor are all equipment a knight wears or carries. A Castle is a building.",
+    defs: { Sword: "A bladed weapon.", Shield: "A piece of protective armor held in the hand.", Armor: "Protective covering worn in battle.", Castle: "A large fortified building." } },
+  { options: ["Pyramid", "Colosseum", "Parthenon", "River"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Pyramid, Colosseum and Parthenon are all ancient man-made structures. A River is a natural feature.",
+    defs: { Pyramid: "A massive stone structure built in ancient Egypt.", Colosseum: "A huge ancient Roman amphitheater.", Parthenon: "An ancient Greek temple.", River: "A flowing body of fresh water." } },
+  { options: ["Rome", "Athens", "Cairo", "Sahara"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Rome, Athens and Cairo are all cities. The Sahara is a desert.",
+    defs: { Rome: "The capital city of Italy.", Athens: "The capital city of Greece.", Cairo: "The capital city of Egypt.", Sahara: "A vast desert in northern Africa." } },
+  { options: ["Paris", "London", "Tokyo", "Europe"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Paris, London and Tokyo are all cities. Europe is a continent.",
+    defs: { Paris: "The capital city of France.", London: "The capital city of the United Kingdom.", Tokyo: "The capital city of Japan.", Europe: "A continent made up of many countries." } },
+  { options: ["France", "Germany", "Spain", "Paris"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "France, Germany and Spain are all countries. Paris is a city, the capital of France.",
+    defs: { France: "A country in Western Europe.", Germany: "A country in Central Europe.", Spain: "A country in Southern Europe.", Paris: "The capital city of France." } },
+  { options: ["English", "Spanish", "French", "Grammar"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "English, Spanish and French are all languages. Grammar is the set of rules that structure a language.",
+    defs: { English: "A language spoken widely around the world.", Spanish: "A language spoken in Spain and Latin America.", French: "A language spoken in France and other countries.", Grammar: "The rules that structure a language." } },
+  { options: ["Verb", "Adverb", "Pronoun", "Paragraph"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Verb, Adverb and Pronoun are all parts of speech. A Paragraph is a unit of writing, not a word type.",
+    defs: { Verb: "A word describing an action.", Adverb: "A word describing a verb, adjective, or another adverb.", Pronoun: "A word used in place of a noun.", Paragraph: "A distinct section of writing." } },
+  { options: ["Multiplication", "Division", "Subtraction", "Geometry"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Multiplication, Division and Subtraction are all math operations. Geometry is a whole branch of math.",
+    defs: { Multiplication: "Repeated addition of a number.", Division: "Splitting a number into equal parts.", Subtraction: "Taking one number away from another.", Geometry: "The branch of math dealing with shapes." } },
+  { options: ["Algebra", "Geometry", "Calculus", "Sentence"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Algebra, Geometry and Calculus are all branches of mathematics. A Sentence is a unit of grammar.",
+    defs: { Algebra: "The branch of math using letters to represent numbers.", Geometry: "The branch of math dealing with shapes.", Calculus: "The branch of math dealing with change and motion.", Sentence: "A group of words expressing a complete thought." } },
+  { options: ["Length", "Width", "Height", "Color"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Length, Width and Height are all physical dimensions. Color is a visual property, not a dimension.",
+    defs: { Length: "How long something is.", Width: "How wide something is.", Height: "How tall something is.", Color: "The visual appearance created by light." } },
+  { options: ["North Pole", "South Pole", "Equator", "Iceberg"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "North Pole, South Pole and Equator are all imaginary reference points on Earth. An Iceberg is a real, physical chunk of ice.",
+    defs: { "North Pole": "The northernmost point on Earth.", "South Pole": "The southernmost point on Earth.", Equator: "The imaginary line around Earth's middle.", Iceberg: "A large floating chunk of ice." } },
+  { options: ["Sunrise", "Sunset", "Noon", "Cloud"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Sunrise, Sunset and Noon are all times of day. A Cloud is a weather feature, not a time.",
+    defs: { Sunrise: "The time when the Sun appears in the morning.", Sunset: "The time when the Sun disappears in the evening.", Noon: "The middle of the day.", Cloud: "A visible mass of water droplets in the sky." } },
+  { options: ["Thermometer", "Barometer", "Anemometer", "Microscope"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Thermometer, Barometer and Anemometer are all instruments that measure the weather. A Microscope is used to study small objects, not weather.",
+    defs: { Thermometer: "An instrument that measures temperature.", Barometer: "An instrument that measures air pressure.", Anemometer: "An instrument that measures wind speed.", Microscope: "An instrument used to view very small objects." } },
+  { options: ["Microscope", "Telescope", "Binoculars", "Thermometer"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Microscope, Telescope and Binoculars are all instruments used for viewing things. A Thermometer measures temperature.",
+    defs: { Microscope: "An instrument used to view very small objects.", Telescope: "An instrument used to view distant objects in space.", Binoculars: "A handheld instrument for viewing distant objects.", Thermometer: "An instrument that measures temperature." } },
+  { options: ["Ocean", "Sea", "Lake", "Volcano"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Ocean, Sea and Lake are all bodies of water. A Volcano is a mountain that erupts.",
+    defs: { Ocean: "A vast body of salt water.", Sea: "A body of salt water smaller than an ocean.", Lake: "A body of water surrounded by land.", Volcano: "A mountain that can erupt with lava." } },
+  { options: ["Iron", "Steel", "Bronze", "Oxygen"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Iron, Steel and Bronze are all metals or metal alloys. Oxygen is a gas.",
+    defs: { Iron: "A strong metal used to make steel.", Steel: "A strong alloy made mostly of iron.", Bronze: "An alloy made of copper and tin.", Oxygen: "A gas needed for breathing." } },
+  { options: ["Brass", "Bronze", "Steel", "Wood"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Brass, Bronze and Steel are all metal alloys. Wood is a natural material from trees.",
+    defs: { Brass: "An alloy of copper and zinc.", Bronze: "An alloy of copper and tin.", Steel: "A strong alloy made mostly of iron.", Wood: "A natural material from trees." } },
+  { options: ["Cotton", "Wool", "Silk", "Plastic"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Cotton, Wool and Silk are all natural fibers. Plastic is a synthetic material.",
+    defs: { Cotton: "A soft natural fiber from a plant.", Wool: "A natural fiber from sheep.", Silk: "A natural fiber produced by silkworms.", Plastic: "A synthetic material made from chemicals." } },
+  { options: ["Nylon", "Polyester", "Plastic", "Wool"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Nylon, Polyester and Plastic are all synthetic materials. Wool is a natural fiber.",
+    defs: { Nylon: "A synthetic fiber used in fabrics.", Polyester: "A synthetic fiber used in clothing.", Plastic: "A synthetic material made from chemicals.", Wool: "A natural fiber from sheep." } },
+  { options: ["Recycle", "Reduce", "Reuse", "Pollute"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Recycle, Reduce and Reuse are all actions that help the environment. Pollute harms it.",
+    defs: { Recycle: "To process used materials for reuse.", Reduce: "To use less of something.", Reuse: "To use something again.", Pollute: "To contaminate the environment with harmful substances." } },
+  { options: ["Solar panel", "Wind turbine", "Hydroelectric dam", "Coal plant"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Solar panel, Wind turbine and Hydroelectric dam all generate renewable energy. A Coal plant uses a non-renewable fuel.",
+    defs: { "Solar panel": "A device that converts sunlight into electricity.", "Wind turbine": "A device that converts wind into electricity.", "Hydroelectric dam": "A structure that converts flowing water into electricity.", "Coal plant": "A facility that burns coal, a non-renewable fuel, to make electricity." } },
+  { options: ["Coal", "Oil", "Natural gas", "Solar"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Coal, Oil and Natural gas are all non-renewable fossil fuels. Solar is a renewable energy source.",
+    defs: { Coal: "A fossil fuel formed from ancient plants.", Oil: "A fossil fuel formed from ancient organisms.", "Natural gas": "A fossil fuel found underground.", Solar: "Renewable energy from sunlight." } },
+  { options: ["Province", "State", "County", "River"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Province, State and County are all administrative divisions of land. A River is a natural feature.",
+    defs: { Province: "A large administrative division within a country.", State: "A region within a country with its own government.", County: "A smaller administrative division within a state.", River: "A flowing body of fresh water." } },
+  { options: ["Mayor", "Governor", "President", "Kingdom"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Mayor, Governor and President are all elected leaders. A Kingdom is a type of territory.",
+    defs: { Mayor: "The elected leader of a city.", Governor: "The elected leader of a state.", President: "The elected leader of a country.", Kingdom: "A territory ruled by a king or queen." } },
+  { options: ["Kingdom", "Phylum", "Class", "Ecosystem"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Kingdom, Phylum and Class are all ranks in biological classification. An Ecosystem is a community of living things, not a classification rank.",
+    defs: { Kingdom: "The broadest rank in biological classification.", Phylum: "A rank in biological classification below kingdom.", Class: "A rank in biological classification below phylum.", Ecosystem: "A community of living things and their environment." } },
+  { options: ["Producer", "Consumer", "Decomposer", "Habitat"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Producer, Consumer and Decomposer are all roles in a food chain. A Habitat is where an organism lives.",
+    defs: { Producer: "An organism that makes its own food, like a plant.", Consumer: "An organism that eats other organisms.", Decomposer: "An organism that breaks down dead matter.", Habitat: "The natural environment where an organism lives." } },
+  { options: ["Predator", "Prey", "Scavenger", "Ecosystem"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Predator, Prey and Scavenger all describe roles of individual organisms. An Ecosystem is the whole system they live in.",
+    defs: { Predator: "An animal that hunts other animals.", Prey: "An animal that is hunted by others.", Scavenger: "An animal that eats dead animals it did not kill.", Ecosystem: "A community of living things and their environment." } },
+  { options: ["Photosynthesis", "Respiration", "Digestion", "Gravity"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Photosynthesis, Respiration and Digestion are all biological processes. Gravity is a physical force.",
+    defs: { Photosynthesis: "The process plants use to make food from sunlight.", Respiration: "The process of releasing energy from food.", Digestion: "The process of breaking down food in the body.", Gravity: "The force that pulls objects toward each other." } },
+  { options: ["Skeleton", "Muscle", "Skin", "Weather"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Skeleton, Muscle and Skin are all parts of the body. Weather is an unrelated natural phenomenon.",
+    defs: { Skeleton: "The framework of bones in the body.", Muscle: "Tissue that allows the body to move.", Skin: "The outer covering of the body.", Weather: "The day-to-day state of the atmosphere." } },
+  { options: ["Brain", "Spine", "Nerve", "Volcano"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Brain, Spine and Nerve are all parts of the nervous system. A Volcano is a mountain that erupts.",
+    defs: { Brain: "The organ that controls the body and thoughts.", Spine: "The column of bones protecting the spinal cord.", Nerve: "A fiber that carries signals through the body.", Volcano: "A mountain that can erupt with lava." } },
+  { options: ["Vein", "Artery", "Capillary", "Continent"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Vein, Artery and Capillary are all blood vessels. A Continent is a landmass.",
+    defs: { Vein: "A blood vessel that carries blood to the heart.", Artery: "A blood vessel that carries blood away from the heart.", Capillary: "A tiny blood vessel connecting arteries and veins.", Continent: "One of Earth's large landmasses." } },
+  { options: ["Democracy", "Monarchy", "Republic", "Gravity"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Democracy, Monarchy and Republic are all types of government. Gravity is a physical force.",
+    defs: { Democracy: "Government elected by the people.", Monarchy: "Government led by a king or queen.", Republic: "Government where power is held by elected representatives.", Gravity: "The force that pulls objects toward each other." } },
+  { options: ["Ally", "Enemy", "Rival", "Treaty"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Ally, Enemy and Rival all describe a relationship between people or nations. A Treaty is a formal agreement.",
+    defs: { Ally: "A country or person who supports another in a conflict.", Enemy: "A country or person who opposes another.", Rival: "A person or group competing with another.", Treaty: "A formal agreement between countries." } },
+  { options: ["War", "Battle", "Conflict", "Peace"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "War, Battle and Conflict all describe fighting. Peace is the opposite — a state free from fighting.",
+    defs: { War: "A state of armed conflict between groups.", Battle: "A single fight within a war.", Conflict: "A serious disagreement or clash.", Peace: "A state free from war or fighting." } },
+  { options: ["Invasion", "Attack", "Assault", "Truce"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Invasion, Attack and Assault are all aggressive actions. A Truce is an agreement to stop fighting.",
+    defs: { Invasion: "An act of entering another country with force.", Attack: "An aggressive act against someone.", Assault: "A violent physical attack.", Truce: "An agreement to stop fighting." } },
+  { options: ["Continent", "Nation", "State", "Passport"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Continent, Nation and State are all types of geographic or political territory. A Passport is a travel document.",
+    defs: { Continent: "One of Earth's large landmasses.", Nation: "A large group of people organized under a government.", State: "A region within a country with its own government.", Passport: "An official document allowing travel between countries." } },
+  { options: ["Whisper", "Murmur", "Mutter", "Shout"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Whisper, Murmur and Mutter all describe speaking quietly. Shout means speaking loudly, the opposite.",
+    defs: { Whisper: "To speak very softly.", Murmur: "To speak in a low, soft voice.", Mutter: "To speak quietly and unclearly.", Shout: "To speak or call out loudly." } },
+  { options: ["Glide", "Soar", "Float", "Sink"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Glide, Soar and Float all describe moving smoothly through air or water. Sink means going downward.",
+    defs: { Glide: "To move smoothly and effortlessly.", Soar: "To fly or rise high in the air.", Float: "To rest on the surface of a liquid.", Sink: "To go down below the surface." } },
+  { options: ["Stroll", "Wander", "Amble", "Sprint"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Stroll, Wander and Amble all describe walking slowly. Sprint means running at full speed.",
+    defs: { Stroll: "To walk in a slow, relaxed way.", Wander: "To walk without a specific direction.", Amble: "To walk at a slow, easy pace.", Sprint: "To run at full speed for a short distance." } },
+  { options: ["Giggle", "Chuckle", "Snicker", "Sob"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Giggle, Chuckle and Snicker all describe ways of laughing. Sob describes crying.",
+    defs: { Giggle: "To laugh in a light, silly way.", Chuckle: "To laugh quietly.", Snicker: "To laugh in a sly, quiet way.", Sob: "To cry with gasping breaths." } },
+  { options: ["Glisten", "Sparkle", "Shimmer", "Fade"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Glisten, Sparkle and Shimmer all describe something shining. Fade describes something disappearing.",
+    defs: { Glisten: "To shine with a sparkling light.", Sparkle: "To shine with small, bright flashes.", Shimmer: "To shine with a soft, wavering light.", Fade: "To gradually disappear." } },
+  { options: ["Roar", "Growl", "Snarl", "Purr"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Roar, Growl and Snarl are all aggressive animal sounds. Purr is a sound of contentment.",
+    defs: { Roar: "A loud, deep sound made by big cats.", Growl: "A low, threatening sound.", Snarl: "An angry growling sound, often baring teeth.", Purr: "A soft, low, rumbling sound made by contented cats." } },
+  { options: ["Bark", "Howl", "Whimper", "Meow"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Bark, Howl and Whimper are all sounds dogs make. Meow is the sound a cat makes.",
+    defs: { Bark: "The short, sharp sound a dog makes.", Howl: "A long, mournful sound a dog or wolf makes.", Whimper: "A soft, high-pitched sound of distress.", Meow: "The sound a cat makes." } },
+  { options: ["Trot", "Gallop", "Canter", "Slither"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Trot, Gallop and Canter are all ways horses move. Slither describes how a snake moves.",
+    defs: { Trot: "A moderate, two-beat gait of a horse.", Gallop: "The fastest gait of a horse.", Canter: "A smooth, three-beat gait of a horse.", Slither: "To move by sliding, like a snake." } },
+  { options: ["Hop", "Leap", "Bound", "Crawl"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Hop, Leap and Bound all describe jumping movements. Crawl describes moving on hands and knees.",
+    defs: { Hop: "To make a small jump, often on one leg.", Leap: "To jump a long distance or height.", Bound: "To move by leaping.", Crawl: "To move slowly on hands and knees." } },
+  { options: ["Boil", "Simmer", "Steam", "Freeze"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Boil, Simmer and Steam all describe cooking with heat. Freeze describes making something cold.",
+    defs: { Boil: "To heat a liquid until it bubbles rapidly.", Simmer: "To cook gently just below boiling.", Steam: "To cook using hot water vapor.", Freeze: "To turn into ice by extreme cold." } },
+  { options: ["Bake", "Roast", "Grill", "Chill"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Bake, Roast and Grill all describe cooking with heat. Chill describes making something cold.",
+    defs: { Bake: "To cook food using dry heat in an oven.", Roast: "To cook food, usually meat, using dry heat.", Grill: "To cook food over direct heat.", Chill: "To make something cold." } },
+  { options: ["Knife", "Fork", "Spoon", "Frying pan"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Knife, Fork and Spoon are all cutlery used for eating. A Frying pan is used for cooking.",
+    defs: { Knife: "A utensil with a blade used for cutting.", Fork: "A utensil with prongs used for eating.", Spoon: "A utensil with a shallow bowl used for eating liquids.", "Frying pan": "A flat cooking pan used over heat." } },
+  { options: ["Pot", "Pan", "Skillet", "Plate"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Pot, Pan and Skillet are all used to cook food. A Plate is used to serve or eat food from.",
+    defs: { Pot: "A deep, round cooking container.", Pan: "A wide, shallow cooking container.", Skillet: "A heavy frying pan.", Plate: "A flat dish used for serving food." } },
+  { options: ["Shirt", "Trousers", "Jacket", "Shoelace"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Shirt, Trousers and Jacket are all full garments. A Shoelace is a small part of footwear.",
+    defs: { Shirt: "A garment worn on the upper body.", Trousers: "A garment worn on the legs.", Jacket: "An outer garment worn over other clothes.", Shoelace: "A cord used to fasten a shoe." } },
+  { options: ["Hat", "Scarf", "Gloves", "Umbrella"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Hat, Scarf and Gloves are all worn on the body. An Umbrella is carried in the hand to block rain.",
+    defs: { Hat: "A covering worn on the head.", Scarf: "A piece of fabric worn around the neck.", Gloves: "Coverings worn on the hands.", Umbrella: "A device carried to shield from rain." } },
+  { options: ["Sneakers", "Boots", "Sandals", "Socks"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Sneakers, Boots and Sandals are all types of footwear worn outside. Socks are worn underneath, inside the shoe.",
+    defs: { Sneakers: "Casual athletic shoes.", Boots: "Sturdy footwear that covers the ankle.", Sandals: "Open footwear with straps.", Socks: "A soft covering worn on the feet, under shoes." } },
+  { options: ["Guitar", "Bass", "Ukulele", "Drum"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Guitar, Bass and Ukulele are all string instruments. A Drum is a percussion instrument.",
+    defs: { Guitar: "A six-stringed instrument played by plucking or strumming.", Bass: "A large, low-pitched string instrument.", Ukulele: "A small four-stringed instrument.", Drum: "A percussion instrument struck to make sound." } },
+  { options: ["Drum", "Cymbal", "Xylophone", "Trombone"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Drum, Cymbal and Xylophone are all percussion instruments. A Trombone is a brass instrument.",
+    defs: { Drum: "A percussion instrument struck to make sound.", Cymbal: "A percussion instrument made of a metal disc.", Xylophone: "A percussion instrument with wooden bars.", Trombone: "A brass instrument with a sliding tube." } },
+  { options: ["Trombone", "Tuba", "French Horn", "Saxophone"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Trombone, Tuba and French Horn are all brass instruments. A Saxophone is classified as a woodwind, even though it's made of brass.",
+    defs: { Trombone: "A brass instrument with a sliding tube.", Tuba: "A large, deep-toned brass instrument.", "French Horn": "A coiled brass instrument.", Saxophone: "A woodwind instrument, usually made of brass, played with a reed." } },
+  { options: ["Pop", "Rock", "Jazz", "Recipe"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Pop, Rock and Jazz are all music genres. A Recipe gives cooking instructions.",
+    defs: { Pop: "A popular, widely enjoyed music genre.", Rock: "A music genre with strong rhythms and electric instruments.", Jazz: "A music genre known for improvisation.", Recipe: "Instructions for preparing food." } },
+  { options: ["Jazz", "Blues", "Classical", "Sculpture"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Jazz, Blues and Classical are all music genres. A Sculpture is a visual art form.",
+    defs: { Jazz: "A music genre known for improvisation.", Blues: "A music genre expressing sorrow, with a distinct rhythm.", Classical: "Traditional orchestral music.", Sculpture: "A three-dimensional work of art." } },
+  { options: ["Sketch", "Painting", "Mural", "Symphony"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Sketch, Painting and Mural are all visual art forms. A Symphony is a musical work.",
+    defs: { Sketch: "A quick, rough drawing.", Painting: "A picture created with paint.", Mural: "A large painting on a wall.", Symphony: "A long piece of music for orchestra." } },
+  { options: ["Mural", "Fresco", "Mosaic", "Ballad"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Mural, Fresco and Mosaic are all visual art forms. A Ballad is a type of song.",
+    defs: { Mural: "A large painting on a wall.", Fresco: "A painting made on wet plaster.", Mosaic: "A picture made from small pieces of colored material.", Ballad: "A slow, romantic or narrative song." } },
+  { options: ["Ballad", "Anthem", "Lullaby", "Portrait"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Ballad, Anthem and Lullaby are all types of songs. A Portrait is a type of painting.",
+    defs: { Ballad: "A slow, romantic or narrative song.", Anthem: "A song of praise or loyalty, often national.", Lullaby: "A gentle song sung to help a baby sleep.", Portrait: "A painting or picture of a person." } },
+  { options: ["Continent", "Peninsula", "Island", "Ocean"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Continent, Peninsula and Island are all landforms. An Ocean is a body of water.",
+    defs: { Continent: "One of Earth's large landmasses.", Peninsula: "Land surrounded by water on three sides.", Island: "Land completely surrounded by water.", Ocean: "A vast body of salt water." } },
+  { options: ["Atom", "Molecule", "Element", "Planet"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Atom, Molecule and Element are all chemistry terms describing matter. A Planet is an astronomy term.",
+    defs: { Atom: "The smallest unit of matter that retains an element's properties.", Molecule: "Two or more atoms bonded together.", Element: "A pure substance made of only one type of atom.", Planet: "A large body that orbits a star." } },
+  { options: ["Proton", "Neutron", "Electron", "Comet"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Proton, Neutron and Electron are all parts of an atom. A Comet is an object in space.",
+    defs: { Proton: "A positively charged particle in an atom's nucleus.", Neutron: "A neutral particle in an atom's nucleus.", Electron: "A negatively charged particle orbiting an atom's nucleus.", Comet: "An icy body that develops a tail near the Sun." } },
+  { options: ["Solid", "Liquid", "Gas", "Mixture"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Solid, Liquid and Gas are all states of matter. A Mixture is a combination of substances, not a state.",
+    defs: { Solid: "A state of matter with a fixed shape.", Liquid: "A state of matter that flows and takes the shape of its container.", Gas: "A state of matter that spreads to fill its container.", Mixture: "A combination of two or more substances." } },
+  { options: ["Element", "Compound", "Mixture", "Planet"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Element, Compound and Mixture are all ways chemists classify matter. A Planet is an astronomy term.",
+    defs: { Element: "A pure substance made of only one type of atom.", Compound: "A substance made of two or more elements chemically joined.", Mixture: "A combination of substances not chemically joined.", Planet: "A large body that orbits a star." } },
+  { options: ["Acid", "Base", "Salt", "Comet"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Acid, Base and Salt are all chemistry terms. A Comet is an object in space.",
+    defs: { Acid: "A substance with a sour taste and low pH.", Base: "A substance with a bitter taste and high pH.", Salt: "A compound formed when an acid and base react.", Comet: "An icy body that develops a tail near the Sun." } },
+  { options: ["Conductor", "Insulator", "Semiconductor", "Composer"], answer: 3, difficulty: "abstract", session: "bonus",
+    reason: "Conductor, Insulator and Semiconductor all describe how a material handles electricity. A Composer writes music.",
+    defs: { Conductor: "A material that allows electricity to flow through it easily.", Insulator: "A material that blocks the flow of electricity.", Semiconductor: "A material that partly conducts electricity.", Composer: "A person who writes music." } },
+  { options: ["Circuit", "Battery", "Wire", "Violin"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Circuit, Battery and Wire are all electrical components. A Violin is a musical instrument.",
+    defs: { Circuit: "A closed loop through which electricity flows.", Battery: "A device that stores electrical energy.", Wire: "A thin strand of metal that carries electricity.", Violin: "A string instrument played with a bow." } },
+  { options: ["Magnet", "Compass", "Battery", "Piano"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Magnet, Compass and Battery are all connected to magnetism or electricity. A Piano is a musical instrument.",
+    defs: { Magnet: "An object that attracts iron and other magnetic materials.", Compass: "A tool that uses magnetism to show direction.", Battery: "A device that stores electrical energy.", Piano: "A keyboard instrument with strings struck by hammers." } },
+  { options: ["Continent", "Country", "Province", "Symphony"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Continent, Country and Province are all geographic or political divisions of land. A Symphony is a musical work.",
+    defs: { Continent: "One of Earth's large landmasses.", Country: "A nation with its own government.", Province: "A large administrative division within a country.", Symphony: "A long piece of music for orchestra." } },
+  { options: ["Library", "Museum", "Gallery", "Volcano"], answer: 3, difficulty: "concrete", session: "bonus",
+    reason: "Library, Museum and Gallery are all cultural buildings people visit. A Volcano is a natural landform.",
+    defs: { Library: "A building housing books for reading or borrowing.", Museum: "A building displaying objects of historical or scientific interest.", Gallery: "A building displaying works of art.", Volcano: "A mountain that can erupt with lava." } },
+];
+const ANALOGIES = [
+  { pair: ["Puppy", "Dog"], prompt: "Kitten", options: ["Cat", "Milk", "Whiskers", "Fur"], answer: 0, difficulty: "concrete",
+    reason: "A Puppy grows into a Dog, so a Kitten grows into a Cat. The relationship is 'baby animal to adult animal'.",
+    defs: { Puppy: "A baby dog.", Dog: "An adult canine, a common pet.", Kitten: "A baby cat.", Cat: "A small domesticated feline.", Milk: "A liquid produced by mammals.", Whiskers: "Long stiff hairs on an animal's face.", Fur: "The soft hairy coat of a mammal." } },
+  { pair: ["Chef", "Kitchen"], prompt: "Teacher", options: ["Classroom", "Pencil", "Student", "Book"], answer: 0, difficulty: "concrete",
+    reason: "A Chef works in a Kitchen, so a Teacher works in a Classroom. The relationship is 'worker to workplace'.",
+    defs: { Chef: "A person who cooks professionally.", Kitchen: "A room used for cooking.", Teacher: "A person who instructs students.", Classroom: "A room where lessons are taught.", Pencil: "A tool used for writing.", Student: "A person who is learning.", Book: "A written or printed work." } },
+  { pair: ["Bird", "Nest"], prompt: "Bee", options: ["Hive", "Honey", "Sting", "Wing"], answer: 0, difficulty: "concrete",
+    reason: "A Bird lives in a Nest, so a Bee lives in a Hive. The relationship is 'animal to home'.",
+    defs: { Bird: "A feathered, flying animal.", Nest: "A structure built by a bird to lay eggs.", Bee: "A flying insect that makes honey.", Hive: "A structure where bees live.", Honey: "A sweet substance made by bees.", Sting: "A sharp jab from an insect.", Wing: "A limb used for flying." } },
+  { pair: ["Carpenter", "Hammer"], prompt: "Surgeon", options: ["Scalpel", "Hospital", "Patient", "Bandage"], answer: 0, difficulty: "concrete",
+    reason: "A Carpenter uses a Hammer, so a Surgeon uses a Scalpel. The relationship is 'worker to tool'.",
+    defs: { Carpenter: "A person who builds things from wood.", Hammer: "A tool for driving nails.", Surgeon: "A doctor who performs operations.", Scalpel: "A small sharp blade used in surgery.", Hospital: "A place where sick people are treated.", Patient: "A person receiving medical care.", Bandage: "A strip of material used to cover a wound." } },
+  { pair: ["Fish", "Water"], prompt: "Bird", options: ["Air", "Nest", "Feather", "Beak"], answer: 0, difficulty: "concrete",
+    reason: "A Fish moves through Water, so a Bird moves through Air. The relationship is 'animal to the medium it moves through'.",
+    defs: { Fish: "An animal that lives and breathes in water.", Water: "A clear liquid essential for life.", Bird: "A feathered, flying animal.", Air: "The mixture of gases surrounding Earth.", Nest: "A structure built by a bird to lay eggs.", Feather: "A light structure covering a bird's body.", Beak: "The hard pointed mouth part of a bird." } },
+  { pair: ["Hot", "Cold"], prompt: "Fast", options: ["Slow", "Quick", "Rapid", "Speedy"], answer: 0, difficulty: "abstract",
+    reason: "Hot is the opposite of Cold, so Fast is the opposite of Slow. The relationship is 'antonyms'.",
+    defs: { Hot: "Having a high temperature.", Cold: "Having a low temperature.", Fast: "Moving with great speed.", Slow: "Moving at a low speed.", Quick: "Done with speed.", Rapid: "Happening very quickly.", Speedy: "Moving fast." } },
+  { pair: ["Happy", "Joyful"], prompt: "Sad", options: ["Miserable", "Angry", "Excited", "Calm"], answer: 0, difficulty: "abstract",
+    reason: "Happy and Joyful mean the same thing, so Sad and Miserable mean the same thing. The relationship is 'synonyms'.",
+    defs: { Happy: "Feeling pleased or content.", Joyful: "Full of happiness.", Sad: "Feeling unhappy.", Miserable: "Very unhappy.", Angry: "Feeling strong displeasure.", Excited: "Feeling great enthusiasm.", Calm: "Free from agitation." } },
+  { pair: ["Petal", "Flower"], prompt: "Page", options: ["Book", "Pencil", "Library", "Cover"], answer: 0, difficulty: "concrete",
+    reason: "A Petal is part of a Flower, so a Page is part of a Book. The relationship is 'part to whole'.",
+    defs: { Petal: "One of the colored parts of a flower.", Flower: "The colorful part of a plant used for reproduction.", Page: "One sheet of paper in a book.", Book: "A written or printed work.", Pencil: "A tool used for writing.", Library: "A building housing books.", Cover: "The outer covering of a book." } },
+  { pair: ["Branch", "Tree"], prompt: "Finger", options: ["Hand", "Nail", "Glove", "Arm"], answer: 0, difficulty: "concrete",
+    reason: "A Branch is part of a Tree, so a Finger is part of a Hand. The relationship is 'part to whole'.",
+    defs: { Branch: "A woody part growing from a tree's trunk.", Tree: "A tall plant with a trunk and branches.", Finger: "One of the five digits of the hand.", Hand: "The part of the arm below the wrist.", Nail: "The hard covering at the tip of a finger.", Glove: "A covering worn on the hand.", Arm: "The upper limb of the body." } },
+  { pair: ["Fire", "Smoke"], prompt: "Rain", options: ["Flood", "Umbrella", "Cloud", "Puddle"], answer: 0, difficulty: "abstract",
+    reason: "Fire causes Smoke, so heavy Rain can cause a Flood. The relationship is 'cause to effect'.",
+    defs: { Fire: "Combustion that produces heat and light.", Smoke: "The visible gas produced by burning.", Rain: "Water falling from clouds.", Flood: "An overflow of water onto dry land.", Umbrella: "A device carried to shield from rain.", Cloud: "A visible mass of water droplets in the sky.", Puddle: "A small pool of liquid." } },
+  { pair: ["France", "Paris"], prompt: "Japan", options: ["Tokyo", "Asia", "Yen", "Mountain"], answer: 0, difficulty: "concrete",
+    reason: "Paris is the capital of France, so Tokyo is the capital of Japan. The relationship is 'country to capital city'.",
+    defs: { France: "A country in Western Europe.", Paris: "The capital city of France.", Japan: "A country in East Asia.", Tokyo: "The capital city of Japan.", Asia: "The largest continent.", Yen: "The currency of Japan.", Mountain: "A very high landform." } },
+  { pair: ["Author", "Book"], prompt: "Composer", options: ["Symphony", "Piano", "Orchestra", "Audience"], answer: 0, difficulty: "concrete",
+    reason: "An Author creates a Book, so a Composer creates a Symphony. The relationship is 'creator to their work'.",
+    defs: { Author: "A person who writes books.", Book: "A written or printed work.", Composer: "A person who writes music.", Symphony: "A long piece of music for orchestra.", Piano: "A keyboard instrument.", Orchestra: "A large group of musicians.", Audience: "People who watch or listen to a performance." } },
+  { pair: ["Ice", "Water"], prompt: "Water", options: ["Steam", "Rain", "River", "Ocean"], answer: 0, difficulty: "abstract",
+    reason: "Ice melts to become Water, so Water evaporates to become Steam. The relationship is 'change of state, solid to liquid to gas'.",
+    defs: { Ice: "Water frozen into a solid.", Water: "A clear liquid essential for life.", Steam: "Water in gas form, produced by heating.", Rain: "Water falling from clouds.", River: "A flowing body of fresh water.", Ocean: "A vast body of salt water." } },
+  { pair: ["Wolf", "Pack"], prompt: "Fish", options: ["School", "Fin", "Gill", "Pond"], answer: 0, difficulty: "concrete",
+    reason: "A group of Wolves is called a Pack, so a group of Fish is called a School. The relationship is 'animal to the name of its group'.",
+    defs: { Wolf: "A wild canine that hunts in packs.", Pack: "A group of wolves living together.", Fish: "An animal that lives and breathes in water.", School: "A large group of fish swimming together.", Fin: "A limb fish use to swim.", Gill: "The organ fish use to breathe underwater.", Pond: "A small body of still water." } },
+  { pair: ["Doctor", "Hospital"], prompt: "Farmer", options: ["Farm", "Tractor", "Crop", "Barn"], answer: 0, difficulty: "concrete",
+    reason: "A Doctor works at a Hospital, so a Farmer works at a Farm. The relationship is 'worker to workplace'.",
+    defs: { Doctor: "A person trained to treat illness.", Hospital: "A place where sick people are treated.", Farmer: "A person who grows crops or raises animals.", Farm: "Land used for growing crops or raising animals.", Tractor: "A vehicle used to pull farm equipment.", Crop: "A plant grown for food or other use.", Barn: "A building used to store farm goods or shelter animals." } },
+  { pair: ["Large", "Gigantic"], prompt: "Small", options: ["Tiny", "Huge", "Wide", "Tall"], answer: 0, difficulty: "abstract",
+    reason: "Gigantic is an extreme version of Large, so Tiny is an extreme version of Small. The relationship is 'word to its intensified form'.",
+    defs: { Large: "Big in size.", Gigantic: "Extremely large.", Small: "Little in size.", Tiny: "Extremely small.", Huge: "Very large in size or extent.", Wide: "Having a large distance from side to side.", Tall: "Having a great height." } },
+  { pair: ["Caterpillar", "Butterfly"], prompt: "Tadpole", options: ["Frog", "Pond", "Egg", "Lily pad"], answer: 0, difficulty: "concrete",
+    reason: "A Caterpillar changes into a Butterfly, so a Tadpole changes into a Frog. The relationship is 'young form to adult form'.",
+    defs: { Caterpillar: "The larval stage of a butterfly.", Butterfly: "A colorful flying insect.", Tadpole: "The larval stage of a frog.", Frog: "An amphibian known for jumping and croaking.", Pond: "A small body of still water.", Egg: "The first stage of many animals' lives.", "Lily pad": "A floating leaf of a water lily." } },
+  { pair: ["Pilot", "Airplane"], prompt: "Captain", options: ["Ship", "Ocean", "Sailor", "Anchor"], answer: 0, difficulty: "concrete",
+    reason: "A Pilot operates an Airplane, so a Captain operates a Ship. The relationship is 'operator to vehicle'.",
+    defs: { Pilot: "A person who flies an aircraft.", Airplane: "A vehicle that flies through the air.", Captain: "The person in charge of a ship.", Ship: "A large vessel for traveling on water.", Ocean: "A vast body of salt water.", Sailor: "A person who works on a ship.", Anchor: "A heavy object used to hold a ship in place." } },
+  { pair: ["Weak", "Feeble"], prompt: "Strong", options: ["Powerful", "Fragile", "Soft", "Slow"], answer: 0, difficulty: "abstract",
+    reason: "Feeble means the same as Weak, so Powerful means the same as Strong. The relationship is 'synonyms'.",
+    defs: { Weak: "Lacking physical strength.", Feeble: "Very weak.", Strong: "Having great physical power.", Powerful: "Having great strength or force.", Fragile: "Easily broken or damaged.", Soft: "Not hard or firm.", Slow: "Moving at a low speed." } },
+  { pair: ["Bee", "Honey"], prompt: "Cow", options: ["Milk", "Farm", "Grass", "Barn"], answer: 0, difficulty: "concrete",
+    reason: "A Bee produces Honey, so a Cow produces Milk. The relationship is 'animal to what it produces'.",
+    defs: { Bee: "A flying insect that makes honey.", Honey: "A sweet substance made by bees.", Cow: "A large farm animal raised for milk and meat.", Milk: "A liquid produced by mammals.", Farm: "Land used for growing crops or raising animals.", Grass: "A common green plant grazing animals eat.", Barn: "A building used to shelter farm animals." } },
+  { pair: ["Eye", "See"], prompt: "Ear", options: ["Hear", "Sound", "Nose", "Listen"], answer: 0, difficulty: "concrete",
+    reason: "An Eye is used to See, so an Ear is used to Hear. The relationship is 'body part to its function'.",
+    defs: { Eye: "The organ used for sight.", See: "To perceive with the eyes.", Ear: "The organ used for hearing.", Hear: "To perceive sound.", Sound: "Vibrations that can be heard.", Nose: "The organ used for smelling.", Listen: "To pay attention to sound." } },
+  { pair: ["Thermometer", "Temperature"], prompt: "Scale", options: ["Weight", "Kitchen", "Balance", "Number"], answer: 0, difficulty: "abstract",
+    reason: "A Thermometer measures Temperature, so a Scale measures Weight. The relationship is 'instrument to what it measures'.",
+    defs: { Thermometer: "An instrument that measures temperature.", Temperature: "How hot or cold something is.", Scale: "An instrument that measures weight.", Weight: "How heavy something is.", Kitchen: "A room used for cooking.", Balance: "An instrument for comparing weights.", Number: "A mathematical value." } },
+  { pair: ["Author", "Chapter"], prompt: "Composer", options: ["Movement", "Piano", "Note", "Melody"], answer: 0, difficulty: "abstract",
+    reason: "An Author's book is divided into Chapters, so a Composer's symphony is divided into Movements. The relationship is 'whole work to one of its sections'.",
+    defs: { Author: "A person who writes books.", Chapter: "A numbered section of a book.", Composer: "A person who writes music.", Movement: "A major section of a long musical work.", Piano: "A keyboard instrument.", Note: "A single musical sound.", Melody: "A sequence of musical notes." } },
+  { pair: ["Cub", "Lion"], prompt: "Calf", options: ["Cow", "Milk", "Barn", "Herd"], answer: 0, difficulty: "concrete",
+    reason: "A Cub is a baby Lion, so a Calf is a baby Cow. The relationship is 'baby animal to adult animal'.",
+    defs: { Cub: "A baby lion, bear, or similar animal.", Lion: "A large wild cat.", Calf: "A baby cow.", Cow: "A large farm animal raised for milk and meat.", Milk: "A liquid produced by mammals.", Barn: "A building used to shelter farm animals.", Herd: "A group of cattle or similar animals." } },
+  { pair: ["Blind", "See"], prompt: "Deaf", options: ["Hear", "Ear", "Loud", "Silent"], answer: 0, difficulty: "abstract",
+    reason: "A Blind person cannot See, so a Deaf person cannot Hear. The relationship is 'a condition to the sense it affects'.",
+    defs: { Blind: "Unable to see.", See: "To perceive with the eyes.", Deaf: "Unable to hear.", Hear: "To perceive sound.", Ear: "The organ used for hearing.", Loud: "Producing a lot of noise.", Silent: "Making no sound at all." } },
+  { pair: ["Pen", "Write"], prompt: "Scissors", options: ["Cut", "Paper", "Sharp", "Blade"], answer: 0, difficulty: "concrete",
+    reason: "A Pen is used to Write, so Scissors are used to Cut. The relationship is 'tool to its purpose'.",
+    defs: { Pen: "A tool used for writing with ink.", Write: "To form letters or words.", Scissors: "A tool with two blades used for cutting.", Cut: "To divide with a sharp tool.", Paper: "A thin material used for writing.", Sharp: "Having a fine edge able to cut.", Blade: "The flat cutting part of a tool." } },
+  { pair: ["Generous", "Selfish"], prompt: "Brave", options: ["Cowardly", "Bold", "Fearless", "Daring"], answer: 0, difficulty: "abstract",
+    reason: "Generous is the opposite of Selfish, so Brave is the opposite of Cowardly. The relationship is 'antonyms'.",
+    defs: { Generous: "Willing to give freely.", Selfish: "Caring only about oneself.", Brave: "Ready to face danger without fear.", Cowardly: "Lacking courage.", Bold: "Showing courage and confidence.", Fearless: "Without fear.", Daring: "Willing to take risks." } },
+  { pair: ["Spider", "Eight"], prompt: "Insect", options: ["Six", "Web", "Crawl", "Wings"], answer: 0, difficulty: "concrete",
+    reason: "A Spider has Eight legs, so an Insect has Six legs. The relationship is 'animal to its number of legs'.",
+    defs: { Spider: "An eight-legged arachnid.", Eight: "The number 8.", Insect: "A small animal with six legs, like an ant or bee.", Six: "The number 6.", Web: "The silk structure a spider spins.", Crawl: "To move slowly close to the ground.", Wings: "Limbs used for flying." } },
+  { pair: ["Library", "Books"], prompt: "Museum", options: ["Artifacts", "History", "Ticket", "Guide"], answer: 0, difficulty: "concrete",
+    reason: "A Library holds Books, so a Museum holds Artifacts. The relationship is 'building to what it contains'.",
+    defs: { Library: "A building housing books.", Books: "Written or printed works.", Museum: "A building displaying objects of historical interest.", Artifacts: "Objects of historical or cultural interest.", History: "The study of the past.", Ticket: "A pass allowing entry.", Guide: "A person who shows visitors around." } },
+  { pair: ["Whisper", "Shout"], prompt: "Walk", options: ["Sprint", "Stroll", "Jog", "Crawl"], answer: 0, difficulty: "abstract",
+    reason: "A Shout is a much louder version of a Whisper, so a Sprint is a much faster version of a Walk. The relationship is 'a mild action to its extreme version'.",
+    defs: { Whisper: "To speak very softly.", Shout: "To speak or call out loudly.", Walk: "To move at a normal pace on foot.", Sprint: "To run at full speed for a short distance.", Stroll: "To walk in a slow, relaxed way.", Jog: "To run at a steady, gentle pace.", Crawl: "To move slowly on hands and knees." } },
+  { pair: ["Grape", "Vine"], prompt: "Apple", options: ["Tree", "Juice", "Seed", "Orchard"], answer: 0, difficulty: "concrete",
+    reason: "A Grape grows on a Vine, so an Apple grows on a Tree. The relationship is 'fruit to what it grows on'.",
+    defs: { Grape: "A small round fruit that grows in bunches.", Vine: "A climbing or trailing plant.", Apple: "A round fruit that grows on trees.", Tree: "A tall plant with a trunk and branches.", Juice: "The liquid extracted from fruit.", Seed: "The part of a plant that can grow into a new plant.", Orchard: "A piece of land planted with fruit trees." } },
+  { pair: ["Actor", "Stage"], prompt: "Swimmer", options: ["Pool", "Towel", "Goggles", "Lifeguard"], answer: 0, difficulty: "concrete",
+    reason: "An Actor performs on a Stage, so a Swimmer performs in a Pool. The relationship is 'performer to where they perform'.",
+    defs: { Actor: "A person who performs in plays or films.", Stage: "A raised platform for performances.", Swimmer: "A person who swims.", Pool: "A structure holding water for swimming.", Towel: "A cloth used for drying.", Goggles: "Protective eyewear worn for swimming.", Lifeguard: "A person who supervises safety at a pool or beach." } },
+  { pair: ["Ancient", "Modern"], prompt: "Interior", options: ["Exterior", "Inside", "Center", "Inner"], answer: 0, difficulty: "abstract",
+    reason: "Ancient is the opposite of Modern, so Interior is the opposite of Exterior. The relationship is 'antonyms'.",
+    defs: { Ancient: "Very old, from long ago.", Modern: "Relating to the present time.", Interior: "The inner part of something.", Exterior: "The outer part of something.", Inside: "The inner part of something.", Center: "The middle point.", Inner: "Located inside." } },
+  { pair: ["King", "Crown"], prompt: "Judge", options: ["Gavel", "Court", "Law", "Trial"], answer: 0, difficulty: "concrete",
+    reason: "A King is symbolized by a Crown, so a Judge is symbolized by a Gavel. The relationship is 'a role to its symbolic object'.",
+    defs: { King: "The male ruler of a monarchy.", Crown: "A headpiece worn by royalty.", Judge: "A person who presides over a court.", Gavel: "A small hammer used by a judge.", Court: "A place where legal cases are decided.", Law: "A rule made by a government.", Trial: "A formal examination of evidence in court." } },
+  { pair: ["Seed", "Plant"], prompt: "Egg", options: ["Chick", "Nest", "Shell", "Hen"], answer: 0, difficulty: "concrete",
+    reason: "A Seed grows into a Plant, so an Egg hatches into a Chick. The relationship is 'the start of life to what it becomes'.",
+    defs: { Seed: "The part of a plant that can grow into a new plant.", Plant: "A living thing that grows in soil.", Egg: "The first stage of many animals' lives.", Chick: "A baby chicken.", Nest: "A structure built by a bird to lay eggs.", Shell: "The hard outer covering of an egg.", Hen: "An adult female chicken." } },
+  { pair: ["Sugar", "Sweet"], prompt: "Lemon", options: ["Sour", "Yellow", "Juice", "Peel"], answer: 0, difficulty: "concrete",
+    reason: "Sugar tastes Sweet, so a Lemon tastes Sour. The relationship is 'food to its taste'.",
+    defs: { Sugar: "A sweet substance used to flavor food.", Sweet: "Having the taste of sugar.", Lemon: "A yellow, sour citrus fruit.", Sour: "Having a sharp, tart taste.", Yellow: "A bright color, like the sun.", Juice: "The liquid extracted from fruit.", Peel: "The outer skin of a fruit." } },
+  { pair: ["Painter", "Canvas"], prompt: "Sculptor", options: ["Marble", "Chisel", "Gallery", "Statue"], answer: 0, difficulty: "concrete",
+    reason: "A Painter creates their work on Canvas, so a Sculptor creates their work from Marble. The relationship is 'artist to their material'.",
+    defs: { Painter: "An artist who creates pictures with paint.", Canvas: "A cloth surface used for painting.", Sculptor: "An artist who creates three-dimensional works.", Marble: "A stone often carved into sculptures.", Chisel: "A tool used to carve stone or wood.", Gallery: "A building displaying works of art.", Statue: "A carved or shaped figure." } },
+  { pair: ["Thief", "Steal"], prompt: "Liar", options: ["Lie", "Truth", "Secret", "Trust"], answer: 0, difficulty: "abstract",
+    reason: "A Thief is someone who Steals, so a Liar is someone who Lies. The relationship is 'a person to the action that defines them'.",
+    defs: { Thief: "A person who steals.", Steal: "To take something without permission.", Liar: "A person who tells lies.", Lie: "To say something untrue.", Truth: "A fact that is true.", Secret: "Something kept hidden.", Trust: "A belief in someone's honesty." } },
+  { pair: ["Umbrella", "Rain"], prompt: "Sunscreen", options: ["Sunburn", "Beach", "Heat", "Summer"], answer: 0, difficulty: "abstract",
+    reason: "An Umbrella protects you from Rain, so Sunscreen protects you from Sunburn. The relationship is 'protective item to what it protects against'.",
+    defs: { Umbrella: "A device carried to shield from rain.", Rain: "Water falling from clouds.", Sunscreen: "A lotion that protects skin from the sun.", Sunburn: "Skin damage caused by too much sun.", Beach: "A sandy area next to the sea.", Heat: "The state of being hot.", Summer: "The warmest season of the year." } },
+  { pair: ["Novel", "Chapter"], prompt: "Play", options: ["Act", "Stage", "Script", "Actor"], answer: 0, difficulty: "abstract",
+    reason: "A Novel is divided into Chapters, so a Play is divided into Acts. The relationship is 'whole work to one of its sections'.",
+    defs: { Novel: "A long work of fiction in book form.", Chapter: "A numbered section of a book.", Play: "A story performed on stage.", Act: "A main division of a play.", Stage: "A raised platform for performances.", Script: "The written text of a play or film.", Actor: "A person who performs in plays or films." } },
+  { pair: ["Bicycle", "Pedal"], prompt: "Car", options: ["Accelerator", "Wheel", "Engine", "Road"], answer: 0, difficulty: "concrete",
+    reason: "You make a Bicycle move by pressing the Pedal, so you make a Car move by pressing the Accelerator. The relationship is 'vehicle to the control that makes it go'.",
+    defs: { Bicycle: "A two-wheeled vehicle powered by pedaling.", Pedal: "A foot lever used to power a bicycle.", Car: "A road vehicle with four wheels.", Accelerator: "The pedal that controls a car's speed.", Wheel: "A round part that allows a vehicle to roll.", Engine: "The part of a vehicle that produces power.", Road: "A path used by vehicles." } },
+  { pair: ["Diamond", "Hard"], prompt: "Feather", options: ["Light", "Fly", "Bird", "Soft"], answer: 0, difficulty: "abstract",
+    reason: "A Diamond is known for being Hard, so a Feather is known for being Light. The relationship is 'object to its defining quality'.",
+    defs: { Diamond: "A hard, clear precious gemstone.", Hard: "Firm and difficult to break.", Feather: "A light structure covering a bird's body.", Light: "Having little weight.", Fly: "To move through the air.", Bird: "A feathered, flying animal.", Soft: "Not hard or firm." } },
+  { pair: ["Baker", "Bread"], prompt: "Tailor", options: ["Clothes", "Needle", "Fabric", "Shop"], answer: 0, difficulty: "concrete",
+    reason: "A Baker makes Bread, so a Tailor makes Clothes. The relationship is 'worker to what they make'.",
+    defs: { Baker: "A person who makes bread and cakes.", Bread: "A baked food made from flour.", Tailor: "A person who makes and alters clothing.", Clothes: "Items worn to cover the body.", Needle: "A thin tool used for sewing.", Fabric: "Cloth used to make clothing.", Shop: "A place where goods are sold." } },
+  { pair: ["Wet", "Dry"], prompt: "Full", options: ["Empty", "Half", "Heavy", "Light"], answer: 0, difficulty: "abstract",
+    reason: "Wet is the opposite of Dry, so Full is the opposite of Empty. The relationship is 'antonyms'.",
+    defs: { Wet: "Covered or soaked with liquid.", Dry: "Free from moisture.", Full: "Holding as much as possible.", Empty: "Containing nothing.", Half: "One of two equal parts.", Heavy: "Having great weight.", Light: "Having little weight." } },
+  { pair: ["Snake", "Slither"], prompt: "Kangaroo", options: ["Hop", "Pouch", "Tail", "Jump"], answer: 0, difficulty: "concrete",
+    reason: "A Snake moves by Slithering, so a Kangaroo moves by Hopping. The relationship is 'animal to how it moves'. Jump is close in meaning, but Hop is the specific word used for how a kangaroo moves.",
+    defs: { Snake: "A legless reptile.", Slither: "To move by sliding, like a snake.", Kangaroo: "An Australian marsupial that hops.", Hop: "To make a small jump, often on one or two legs.", Pouch: "A pocket of skin some marsupials carry their young in.", Tail: "The rear limb of many animals.", Jump: "To push off the ground into the air." } },
+  { pair: ["Shepherd", "Sheep"], prompt: "Beekeeper", options: ["Bees", "Honey", "Hive", "Sting"], answer: 0, difficulty: "concrete",
+    reason: "A Shepherd looks after Sheep, so a Beekeeper looks after Bees. The relationship is 'a carer to the animal they care for'.",
+    defs: { Shepherd: "A person who herds and cares for sheep.", Sheep: "A woolly farm animal.", Beekeeper: "A person who keeps and cares for bees.", Bees: "Flying insects that make honey.", Honey: "A sweet substance made by bees.", Hive: "A structure where bees live.", Sting: "A sharp jab from an insect." } },
+  { pair: ["Match", "Fire"], prompt: "Key", options: ["Door", "Lock", "Metal", "Handle"], answer: 0, difficulty: "abstract",
+    reason: "A Match is used to start a Fire, so a Key is used to open a Door. The relationship is 'tool to the result it produces'.",
+    defs: { Match: "A small stick used to create fire.", Fire: "Combustion that produces heat and light.", Key: "A tool used to open a lock.", Door: "A barrier that opens to allow entry.", Lock: "A device that secures a door.", Metal: "A hard, often shiny material.", Handle: "The part of an object you hold to open or use it." } },
+  { pair: ["Optimist", "Hopeful"], prompt: "Pessimist", options: ["Gloomy", "Cheerful", "Excited", "Confident"], answer: 0, difficulty: "abstract",
+    reason: "An Optimist tends to be Hopeful, so a Pessimist tends to be Gloomy. The relationship is 'a type of person to their typical outlook'.",
+    defs: { Optimist: "A person who expects good outcomes.", Hopeful: "Feeling positive about the future.", Pessimist: "A person who expects bad outcomes.", Gloomy: "Feeling or looking dark and sad.", Cheerful: "Noticeably happy and positive.", Excited: "Feeling great enthusiasm.", Confident: "Feeling sure of oneself." } },
+  { pair: ["Sculptor", "Chisel"], prompt: "Painter", options: ["Brush", "Canvas", "Palette", "Easel"], answer: 0, difficulty: "concrete",
+    reason: "A Sculptor's main tool is a Chisel, so a Painter's main tool is a Brush. The relationship is 'artist to their primary tool'.",
+    defs: { Sculptor: "An artist who creates three-dimensional works.", Chisel: "A tool used to carve stone or wood.", Painter: "An artist who creates pictures with paint.", Brush: "A tool used to apply paint.", Canvas: "A cloth surface used for painting.", Palette: "A board used to mix paint colors.", Easel: "A stand used to hold a painting." } },
+  { pair: ["River", "Stream"], prompt: "Ocean", options: ["Sea", "Wave", "Beach", "Fish"], answer: 0, difficulty: "concrete",
+    reason: "A River is much larger than a Stream, so an Ocean is much larger than a Sea. The relationship is 'a body of water to a smaller version of it'.",
+    defs: { River: "A large flowing body of fresh water.", Stream: "A small flowing body of water.", Ocean: "A vast body of salt water.", Sea: "A body of salt water smaller than an ocean.", Wave: "A moving ridge of water.", Beach: "A sandy area next to the sea.", Fish: "An animal that lives and breathes in water." } },
+  { pair: ["Doctor", "Patient"], prompt: "Lawyer", options: ["Client", "Court", "Case", "Judge"], answer: 0, difficulty: "abstract",
+    reason: "A Doctor's job is to help a Patient, so a Lawyer's job is to help a Client. The relationship is 'professional to the person they help'.",
+    defs: { Doctor: "A person trained to treat illness.", Patient: "A person receiving medical care.", Lawyer: "A person who represents others in legal matters.", Client: "A person who uses a professional's services.", Court: "A place where legal cases are decided.", Case: "A legal matter being decided.", Judge: "A person who presides over a court." } },
+  { pair: ["Sun", "Star"], prompt: "Earth", options: ["Planet", "Moon", "Orbit", "Sky"], answer: 0, difficulty: "concrete",
+    reason: "The Sun is a type of Star, so the Earth is a type of Planet. The relationship is 'a specific object to its general category'.",
+    defs: { Sun: "The star at the center of our solar system.", Star: "A huge ball of burning gas in space.", Earth: "Our home planet.", Planet: "A large body that orbits a star.", Moon: "A natural satellite that orbits a planet.", Orbit: "The path an object takes around another.", Sky: "The space above the Earth." } },
+  { pair: ["Hungry", "Eat"], prompt: "Thirsty", options: ["Drink", "Water", "Cup", "Glass"], answer: 0, difficulty: "concrete",
+    reason: "Being Hungry makes you want to Eat, so being Thirsty makes you want to Drink. The relationship is 'a feeling to the action it drives'.",
+    defs: { Hungry: "Feeling a need for food.", Eat: "To consume food.", Thirsty: "Feeling a need for liquid.", Drink: "To consume liquid.", Water: "A clear liquid essential for life.", Cup: "A small container for drinking.", Glass: "A container made of glass, used for drinking." } },
+  { pair: ["Author", "Pen name"], prompt: "Actor", options: ["Stage name", "Script", "Role", "Costume"], answer: 0, difficulty: "abstract",
+    reason: "An Author sometimes writes under a Pen name, so an Actor sometimes performs under a Stage name. The relationship is 'a profession to the alternate name they might use'.",
+    defs: { Author: "A person who writes books.", "Pen name": "A false name used by a writer.", Actor: "A person who performs in plays or films.", "Stage name": "A false name used by a performer.", Script: "The written text of a play or film.", Role: "A character played by an actor.", Costume: "Clothing worn to represent a character." } },
+  { pair: ["Chick", "Hen"], prompt: "Lamb", options: ["Sheep", "Wool", "Farm", "Grass"], answer: 0, difficulty: "concrete",
+    reason: "A Chick grows into a Hen, so a Lamb grows into a Sheep. The relationship is 'baby animal to adult animal'.",
+    defs: { Chick: "A baby chicken.", Hen: "An adult female chicken.", Lamb: "A baby sheep.", Sheep: "A woolly farm animal.", Wool: "The soft hair of a sheep.", Farm: "Land used for growing crops or raising animals.", Grass: "A common green plant grazing animals eat." } },
+  { pair: ["Novelist", "Chapter"], prompt: "Architect", options: ["Blueprint", "Building", "Bricks", "Construction"], answer: 0, difficulty: "abstract",
+    reason: "A Novelist plans a book using Chapters, so an Architect plans a building using a Blueprint. The relationship is 'a creator to their planning tool'.",
+    defs: { Novelist: "A person who writes novels.", Chapter: "A numbered section of a book.", Architect: "A person who designs buildings.", Blueprint: "A detailed technical drawing of a design.", Building: "A structure with walls and a roof.", Bricks: "Blocks used to build walls.", Construction: "The process of building something." } },
+  { pair: ["Loud", "Deafening"], prompt: "Bright", options: ["Dazzling", "Dark", "Colorful", "Shiny"], answer: 0, difficulty: "abstract",
+    reason: "Deafening is an extreme version of Loud, so Dazzling is an extreme version of Bright. The relationship is 'a word to its intensified form'.",
+    defs: { Loud: "Producing a lot of noise.", Deafening: "Extremely loud.", Bright: "Giving off a lot of light.", Dazzling: "Extremely bright, almost blinding.", Dark: "Having little or no light.", Colorful: "Having many bright colors.", Shiny: "Reflecting light brightly." } },
+];
+
+const STORAGE_KEY = "wordPuzzlesProgress";
+const TIMER_SECONDS = 20;
+
+let mode = "classification"; // "classification" | "analogy"
+let selectedSession = "session1"; // which bank of classification questions to practice
+let screen = "guide";
+let queue = null;
+let ptr = 0;
+let picked = null;
+let missReason = null;
+let returnScreen = null;
+let sessionBankLength = 0;
+
+let firstTryCorrect = 0;
+let retryCorrect = 0;
+let neverCorrect = 0;
+let missVocab = 0;
+let missReasoning = 0;
+let sessionVocabWords = [];
+const requeuedOnce = new Set();
+
+let easyFirst = true;
+let timedMode = false;
+let timeLeft = TIMER_SECONDS;
+let timerInterval = null;
+
+const app = document.getElementById("app");
+const letters = ["A", "B", "C", "D"];
+
+/* ---------- persistence ---------- */
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { streak: 0, bestStreak: 0, lastPlayed: null, sessions: 0 };
+    return JSON.parse(raw);
+  } catch (e) { return { streak: 0, bestStreak: 0, lastPlayed: null, sessions: 0 }; }
+}
+function saveProgress(p) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); } catch (e) {} }
+
+/* ---------- word bank (vocab review) ---------- */
+const WORD_BANK_KEY = "wordPuzzlesWordBank";
+function loadWordBank() {
+  try {
+    const raw = localStorage.getItem(WORD_BANK_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) { return {}; }
+}
+function saveWordBank(bank) { try { localStorage.setItem(WORD_BANK_KEY, JSON.stringify(bank)); } catch (e) {} }
+function addWordsToBank(words, defs, context) {
+  const bank = loadWordBank();
+  words.forEach(w => {
+    if (!bank[w]) {
+      bank[w] = { definition: defs[w] || "", context: context || "", correctStreak: 0, dateAdded: todayStr() };
+    } else {
+      bank[w].definition = defs[w] || bank[w].definition;
+      bank[w].context = context || bank[w].context;
+    }
+  });
+  saveWordBank(bank);
+}
+function dueWordCount() {
+  const bank = loadWordBank();
+  return Object.keys(bank).filter(w => (bank[w].correctStreak || 0) < 2).length;
+}
+function todayStr() { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); }
+function registerSessionStart() {
+  const p = loadProgress();
+  const today = todayStr();
+  if (p.lastPlayed === today) {
+    // already played today
+  } else {
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    const yStr = y.getFullYear() + "-" + (y.getMonth() + 1) + "-" + y.getDate();
+    if (p.lastPlayed === yStr) p.streak = (p.streak || 0) + 1;
+    else p.streak = 1;
+    p.lastPlayed = today;
+    p.bestStreak = Math.max(p.bestStreak || 0, p.streak);
+  }
+  p.sessions = (p.sessions || 0) + 1;
+  saveProgress(p);
+  return p;
+}
+
+/* ---------- shuffling ---------- */
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function currentBank() { return mode === "analogy" ? ANALOGIES : QUESTIONS; }
+function availableSessions() {
+  const set = new Set(QUESTIONS.map(q => q.session).filter(Boolean));
+  const list = Array.from(set);
+  list.sort((a, b) => {
+    if (a === "bonus") return 1;
+    if (b === "bonus") return -1;
+    return a.localeCompare(b, undefined, { numeric: true });
+  });
+  return list;
+}
+function sessionLabel(key) {
+  if (key === "bonus") return "Bonus practice";
+  const m = key.match(/^session(\d+)$/);
+  if (m) return "Session " + m[1];
+  return key;
+}
+let activeBank = null;
+function makeItem(bank, qIdx, isRetry) {
+  const q = bank[qIdx];
+  const order = shuffleArray([0, 1, 2, 3]);
+  const options = order.map(i => q.options[i]);
+  const answer = order.indexOf(q.answer);
+  return { q, idx: qIdx, isRetry: !!isRetry, options, answer };
+}
+
+/* ---------- queue building ---------- */
+function buildQueue() {
+  let bank = currentBank();
+  if (mode === "classification") {
+    bank = bank.filter(q => q.session === selectedSession);
+  }
+  activeBank = bank;
+  sessionBankLength = bank.length;
+  let indices = bank.map((q, idx) => idx);
+  if (easyFirst) {
+    const concrete = shuffleArray(indices.filter(i => bank[i].difficulty === "concrete"));
+    const abstract = shuffleArray(indices.filter(i => bank[i].difficulty === "abstract"));
+    indices = concrete.concat(abstract);
+  } else {
+    shuffleArray(indices);
+  }
+  queue = indices.map(i => makeItem(bank, i, false));
+  ptr = 0;
+  picked = null;
+  missReason = null;
+  firstTryCorrect = 0;
+  retryCorrect = 0;
+  neverCorrect = 0;
+  missVocab = 0;
+  missReasoning = 0;
+  sessionVocabWords = [];
+  requeuedOnce.clear();
+}
+
+function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+function startTimer() {
+  stopTimer();
+  if (!timedMode) return;
+  timeLeft = TIMER_SECONDS;
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) { stopTimer(); if (picked === null) choose(-1); }
+    else { render(); }
+  }, 1000);
+}
+
+function startQuiz() {
+  buildQueue();
+  registerSessionStart();
+  screen = "quiz";
+  render();
+  startTimer();
+}
+function openGuide() { returnScreen = screen; stopTimer(); screen = "guide"; render(); }
+function closeGuide() { screen = returnScreen || "quiz"; render(); if (screen === "quiz") startTimer(); }
+
+function setMode(m) { mode = m; render(); }
+function setSession(s) { selectedSession = s; render(); }
+function toggleEasyFirst() { easyFirst = !easyFirst; render(); }
+function toggleTimed() { timedMode = !timedMode; render(); }
+
+function choose(idx) {
+  if (picked !== null) return;
+  stopTimer();
+  const current = queue[ptr];
+  picked = idx;
+  const isCorrect = idx === current.answer;
+
+  if (isCorrect) {
+    if (current.isRetry) retryCorrect++;
+    else firstTryCorrect++;
+  } else {
+    if (!requeuedOnce.has(current.idx)) {
+      requeuedOnce.add(current.idx);
+      const gap = 3 + Math.floor(Math.random() * 3);
+      const insertPos = Math.min(ptr + gap, queue.length);
+      queue.splice(insertPos, 0, makeItem(activeBank, current.idx, true));
+    } else {
+      neverCorrect++;
+    }
+  }
+  render();
+}
+
+function setMissReason(reason) {
+  missReason = reason;
+  if (reason === "vocab") {
+    missVocab++;
+    const current = queue[ptr];
+    const q = current.q;
+    const isAnalogy = mode === "analogy";
+    const words = isAnalogy ? [q.pair[0], q.pair[1], q.prompt, ...q.options] : q.options;
+    addWordsToBank(words, q.defs, q.reason);
+    words.forEach(w => { if (!sessionVocabWords.includes(w)) sessionVocabWords.push(w); });
+  } else if (reason === "reasoning") {
+    missReasoning++;
+  }
+  render();
+}
+
+function next() {
+  ptr++;
+  picked = null;
+  missReason = null;
+  if (ptr >= queue.length) screen = "done";
+  render();
+  if (screen === "quiz") startTimer();
+}
+
+function restart() { buildQueue(); screen = "quiz"; render(); startTimer(); }
+
+/* ---------- vocabulary review (flashcards) ---------- */
+let reviewQueue = [];
+let reviewPtr = 0;
+let reviewFlipped = false;
+let reviewReviewed = 0;
+let reviewMastered = 0;
+let reviewTricky = 0;
+
+function startReview() {
+  const bank = loadWordBank();
+  reviewQueue = shuffleArray(Object.keys(bank).filter(w => (bank[w].correctStreak || 0) < 2));
+  reviewPtr = 0;
+  reviewFlipped = false;
+  reviewReviewed = 0;
+  reviewMastered = 0;
+  reviewTricky = 0;
+  screen = "review";
+  render();
+}
+function flipCard() { reviewFlipped = true; render(); }
+function markReview(knowIt) {
+  const bank = loadWordBank();
+  const word = reviewQueue[reviewPtr];
+  if (bank[word]) {
+    bank[word].correctStreak = knowIt ? (bank[word].correctStreak || 0) + 1 : 0;
+  }
+  saveWordBank(bank);
+  reviewReviewed++;
+  if (knowIt) reviewMastered++; else reviewTricky++;
+  reviewPtr++;
+  reviewFlipped = false;
+  if (reviewPtr >= reviewQueue.length) screen = "reviewDone";
+  render();
+}
+function backToGuide() { screen = "guide"; render(); }
+
+/* ---------- rendering ---------- */
+function renderGuide() {
+  const p = loadProgress();
+  const due = dueWordCount();
+  const reviewBannerHtml = due > 0 ? `
+    <div class="review-banner">
+      <div>
+        <div class="review-banner-text">📚 ${due} word${due === 1 ? "" : "s"} to review</div>
+        <div class="review-banner-sub">From questions she's missed before</div>
+      </div>
+      <button class="review-now-btn" onclick="startReview()">Review now</button>
+    </div>` : "";
+
+  const streakHtml = (p.sessions > 0) ? `
+    <div class="streak-banner">
+      <div class="streak-item"><span class="streak-num">🔥 ${p.streak || 0}</span><span class="streak-label">day streak</span></div>
+      <div class="streak-item"><span class="streak-num">${p.bestStreak || 0}</span><span class="streak-label">best streak</span></div>
+      <div class="streak-item"><span class="streak-num">${p.sessions || 0}</span><span class="streak-label">sessions</span></div>
+    </div>` : "";
+
+  const modeSwitchHtml = `
+    <div class="mode-switch">
+      <button class="mode-btn ${mode === 'classification' ? 'active' : ''}" onclick="setMode('classification')">Odd one out</button>
+      <button class="mode-btn ${mode === 'analogy' ? 'active' : ''}" onclick="setMode('analogy')">Analogies</button>
+    </div>`;
+
+  let sessionRowHtml = "";
+  if (mode === "classification") {
+    if (!availableSessions().includes(selectedSession)) selectedSession = availableSessions()[0];
+    sessionRowHtml = `
+      <div class="session-row">
+        <p class="session-label">WHICH SET?</p>
+        <div class="session-chips">
+          ${availableSessions().map(s => {
+            const count = QUESTIONS.filter(q => q.session === s).length;
+            return `<button class="session-chip ${selectedSession === s ? 'active' : ''}" onclick="setSession('${s}')">${sessionLabel(s)} <span class="session-count">(${count})</span></button>`;
+          }).join("")}
+        </div>
+      </div>`;
+  }
+
+  let title, intro, stepsHtml, exampleHtml;
+
+  if (mode === "analogy") {
+    title = "How to solve analogies";
+    intro = "These test a different skill: spotting the relationship between a pair of words, then finding a new word that has the same relationship to a third word.";
+    stepsHtml = `
+      <div class="step"><div class="step-num">1</div><div class="step-body">
+        <p class="step-title">Name the relationship in the first pair</p>
+        <p class="step-text">"Puppy is to Dog" — how are they connected? Not just "both animals," but specifically: a Puppy grows up <em>into</em> a Dog. That exact connection is what you're matching.</p>
+      </div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">
+        <p class="step-title">Apply the same relationship to the third word</p>
+        <p class="step-text">If the link is "baby grows into adult," ask: what does a Kitten grow into? Then look for that word in the options.</p>
+      </div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body">
+        <p class="step-title">Say the sentence out loud with each option</p>
+        <p class="step-text">"Puppy is to Dog as Kitten is to ___." Try each option in the blank and see which one makes the sentence make the same kind of sense as the first pair.</p>
+      </div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body">
+        <p class="step-title">Watch for near-misses</p>
+        <p class="step-text">Some wrong options are related to the third word, just not in the <em>same way</em> as the first pair. A word can be a good friend of the topic and still be the wrong answer.</p>
+      </div></div>`;
+    exampleHtml = `
+      <div class="example-box">
+        <p class="example-label">WORKED EXAMPLE</p>
+        <p class="example-analogy">Puppy is to Dog<br>as<br>Kitten is to <span class="answer-word">Cat</span></p>
+      </div>`;
+  } else {
+    title = "How to find the odd one out";
+    intro = "These puzzles are testing one skill: spotting what three words share in common. Here's how to find it on your own, instead of guessing.";
+    stepsHtml = `
+      <div class="step"><div class="step-num">1</div><div class="step-body">
+        <p class="step-title">Name each word's category</p>
+        <p class="step-text">Say out loud what each word <em>is</em> — a tree, an animal, a feeling, a tool. Once all four are labeled, the odd one usually stands out on its own.</p>
+      </div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">
+        <p class="step-title">Look for the three, not the one</p>
+        <p class="step-text">Don't hunt for the word that "looks weird" — the odd one can look perfectly normal. Find what three words share. Whatever's left is the answer, even if it seems ordinary.</p>
+      </div></div>`;
+    exampleHtml = `
+      <div class="example-box">
+        <p class="example-label">WORKED EXAMPLE</p>
+        <div class="example-row"><span class="example-word">Cedar</span><span class="example-tag">tree</span></div>
+        <div class="example-row"><span class="example-word">Birch</span><span class="example-tag">tree</span></div>
+        <div class="example-row"><span class="example-word">Maple</span><span class="example-tag">tree</span></div>
+        <div class="example-row odd"><span class="example-word">Salmon</span><span class="example-tag">fish — odd one out</span></div>
+      </div>`;
+    stepsHtml += `
+      <div class="step"><div class="step-num">3</div><div class="step-body">
+        <p class="step-title">Go word by word if you're stuck</p>
+        <p class="step-text">Slower, but it always works: label option A, then B, then C, then D. Somewhere along the way, one word won't match the others' category.</p>
+      </div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body">
+        <p class="step-title">Ask what kind of connection it is</p>
+        <p class="step-text">Sometimes the link isn't a topic — it's a relationship. Naming the type of connection, not just the topic, catches trickier questions.</p>
+      </div></div>`;
+  }
+
+  app.innerHTML = `
+    <div class="card guide-card">
+      ${reviewBannerHtml}
+      ${streakHtml}
+      ${modeSwitchHtml}
+      ${sessionRowHtml}
+      <p class="guide-eyebrow">Before you start</p>
+      <h1 class="guide-title">${title}</h1>
+      <p class="guide-intro">${intro}</p>
+      ${stepsHtml}
+      ${exampleHtml}
+
+      <div class="settings-box">
+        <div class="setting-row">
+          <div class="setting-text">
+            <p class="setting-title">Easy words first</p>
+            <p class="setting-sub">Concrete categories before abstract ones (synonyms, grammar, science concepts...)</p>
+          </div>
+          <label class="switch"><input type="checkbox" ${easyFirst ? "checked" : ""} onchange="toggleEasyFirst()"><span class="switch-track"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-text">
+            <p class="setting-title">Timed mode</p>
+            <p class="setting-sub">${TIMER_SECONDS} seconds per question. Turn on once she's accurate untimed.</p>
+          </div>
+          <label class="switch"><input type="checkbox" ${timedMode ? "checked" : ""} onchange="toggleTimed()"><span class="switch-track"></span></label>
+        </div>
+      </div>
+
+      <button class="start-btn" onclick="startQuiz()">${queue ? "Back to quiz" : "Start the quiz"}</button>
+      <p class="skip-note">Tap the <strong>?</strong> anytime during the quiz to see this again.</p>
+    </div>`;
+}
+
+function renderQuiz() {
+  const current = queue[ptr];
+  const q = current.q;
+  const pct = (ptr / queue.length) * 100;
+  const scoreSoFar = firstTryCorrect + retryCorrect;
+  const isAnalogy = mode === "analogy";
+
+  let optsHtml = current.options.map((opt, idx) => {
+    let cls = "opt-btn";
+    if (picked !== null) {
+      if (idx === current.answer) cls += " correct";
+      else if (idx === picked) cls += " wrong";
+    }
+    return `<button class="${cls}" ${picked !== null ? "disabled" : ""} onclick="choose(${idx})">
+      <span class="opt-letter">${letters[idx]}</span><span>${opt}</span>
+    </button>`;
+  }).join("");
+
+  let promptHtml;
+  if (isAnalogy) {
+    promptHtml = `<p class="analogy-prompt">${q.pair[0]} is to ${q.pair[1]}<br>as<br>${q.prompt} is to <span class="analogy-blank">___</span></p>`;
+  } else {
+    promptHtml = `<p class="prompt">Three of these four words belong together. Which one doesn't belong?</p>`;
+  }
+
+  let feedbackHtml = "";
+  if (picked !== null) {
+    const isCorrect = picked === current.answer;
+    const willReturn = !isCorrect && requeuedOnce.has(current.idx) && !current.isRetry;
+    const allWords = isAnalogy ? [q.pair[0], q.pair[1], q.prompt, ...q.options] : current.options;
+    const seen = new Set();
+    const defsHtml = allWords.filter(w => { if (seen.has(w)) return false; seen.add(w); return true; }).map(w =>
+      `<p class="def-row"><span class="def-word">${w}</span> <span class="def-text">— ${q.defs[w]}</span></p>`
+    ).join("");
+
+    let missReasonHtml = "";
+    if (!isCorrect) {
+      missReasonHtml = `
+        <div class="miss-reason">
+          <p class="miss-reason-label">WHAT HAPPENED THERE?</p>
+          <div class="miss-reason-btns">
+            <button class="miss-btn ${missReason === 'vocab' ? 'selected' : ''}" onclick="setMissReason('vocab')">Didn't know the words</button>
+            <button class="miss-btn ${missReason === 'reasoning' ? 'selected' : ''}" onclick="setMissReason('reasoning')">Knew them, picked wrong</button>
+          </div>
+        </div>`;
+    }
+
+    feedbackHtml = `
+      <div class="feedback show">
+        <p class="verdict ${isCorrect ? "correct" : "wrong"}">${isCorrect ? "Correct" : (picked === -1 ? `Time's up — the answer is ${current.options[current.answer]}` : `Not quite — the answer is ${current.options[current.answer]}`)}</p>
+        <p class="reason">${q.reason}</p>
+        ${willReturn ? `<p class="requeue-note">This one will come back around in a few questions so you can try it again.</p>` : ""}
+        ${missReasonHtml}
+        <p class="defs-label">WORD MEANINGS</p>
+        ${defsHtml}
+        <button class="next-btn" onclick="next()">${ptr + 1 < queue.length ? "Next question" : "See my score"}</button>
+      </div>`;
+  }
+
+  const timerHtml = (timedMode && picked === null) ? `<span class="timer-label ${timeLeft <= 5 ? 'low' : ''}">⏱ ${timeLeft}s</span>` : "";
+
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="help-btn" onclick="openGuide()" title="How to solve these">?</button>
+        <span class="progress-label">Question ${ptr + 1} of ${queue.length}</span>
+      </div>
+      <div class="topbar-right">${timerHtml}<span class="score-label">Score: ${scoreSoFar}</span></div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="card">
+      <div class="tag-row">
+        ${current.isRetry ? `<span class="tag review">Second try</span>` : ""}
+        ${q.difficulty === "abstract" ? `<span class="tag abstract">Abstract</span>` : ""}
+      </div>
+      ${promptHtml}
+      <div class="options">${optsHtml}</div>
+      ${feedbackHtml}
+    </div>`;
+}
+
+function renderDone() {
+  stopTimer();
+  const total = sessionBankLength;
+  const mastered = firstTryCorrect + retryCorrect;
+  const pct = mastered / total;
+  const msg = neverCorrect === 0 && pct === 1
+    ? "Every single one, mastered — first try or after a second look."
+    : pct >= 0.85 ? "Strong finish. That's a sharp eye for how these words connect."
+    : "Good practice round. Play again and watch the score climb.";
+
+  const vocabWordsHtml = sessionVocabWords.length > 0 ? `
+    <p class="defs-label" style="text-align:left; margin-top: 4px;">WORDS TO REVIEW</p>
+    <div class="vocab-words">${sessionVocabWords.map(w => `<span class="vocab-word-chip">${w}</span>`).join("")}</div>
+    <button class="start-btn" style="margin-bottom: 12px;" onclick="startReview()">Review these now</button>
+  ` : "";
+
+  app.innerHTML = `
+    <div class="card result-card">
+      <p class="result-eyebrow">All done</p>
+      <h1 class="result-score">${mastered} of ${total} mastered</h1>
+      <p class="result-breakdown">${firstTryCorrect} first try &nbsp;·&nbsp; ${retryCorrect} on a second try &nbsp;·&nbsp; ${neverCorrect} to review again</p>
+      <p class="result-breakdown2">${missVocab + missReasoning > 0 ? `Missed for vocab: ${missVocab} &nbsp;·&nbsp; missed for reasoning: ${missReasoning}` : ""}</p>
+      <p class="result-msg">${msg}</p>
+      ${vocabWordsHtml}
+      <button class="replay-btn" onclick="restart()">Play again</button>
+    </div>`;
+}
+
+function renderReview() {
+  const word = reviewQueue[reviewPtr];
+  const bank = loadWordBank();
+  const entry = bank[word] || { definition: "", context: "" };
+  const pct = (reviewPtr / reviewQueue.length) * 100;
+
+  const meaningHtml = reviewFlipped ? `
+      <div class="review-meaning">
+        <p class="review-def"><strong>${word}</strong> — ${entry.definition}</p>
+        <p class="review-context">${entry.context}</p>
+      </div>
+      <div class="review-btns">
+        <button class="review-btn tricky" onclick="markReview(false)">Still tricky</button>
+        <button class="review-btn know" onclick="markReview(true)">I know it now</button>
+      </div>` : `
+      <button class="flip-btn" onclick="flipCard()">Show meaning</button>`;
+
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="topbar-left"><span class="progress-label">Word ${reviewPtr + 1} of ${reviewQueue.length}</span></div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="card review-flash">
+      <p class="prompt" style="text-align:center;">What does this word mean?</p>
+      <p class="review-word">${word}</p>
+      ${meaningHtml}
+    </div>`;
+}
+
+function renderReviewDone() {
+  app.innerHTML = `
+    <div class="card result-card">
+      <p class="result-eyebrow">Review complete</p>
+      <h1 class="result-score">${reviewReviewed} word${reviewReviewed === 1 ? "" : "s"} reviewed</h1>
+      <p class="review-summary-stat">${reviewMastered} she knew &nbsp;·&nbsp; ${reviewTricky} still tricky — they'll come back next time</p>
+      <button class="replay-btn" onclick="backToGuide()">Back to start</button>
+    </div>`;
+}
+
+function render() {
+  if (screen === "guide") renderGuide();
+  else if (screen === "quiz") renderQuiz();
+  else if (screen === "review") renderReview();
+  else if (screen === "reviewDone") renderReviewDone();
+  else renderDone();
+}
+
+render();
+</script>
+</body>
+</html>
